@@ -1,0 +1,45 @@
+import React from 'react';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Screen1 from './pages/Screen1';
+import Screen2 from './pages/Screen2';
+import Screen4 from './pages/Screen4';
+import Screen5 from './pages/Screen5';
+import Screen6 from './pages/Screen6';
+import Screen7 from './pages/Screen7';
+import Screen8 from './pages/Screen8';
+import Screen9 from './pages/Screen9';
+import Screen3 from './pages/Screen3';
+import NotFound from './pages/NotFound';
+import MobileMiddleware from './components/MobileMiddleware';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import NavigationBlocker from './components/NavigationBlocker';
+
+function App() {
+  return (
+    <HashRouter>
+      {/* <NavigationBlocker> */}
+      <Routes>
+        <Route path="/" element={<Navigate to="/screen1" replace />} />
+        <Route path="/screen1" element={<Screen1 />} />
+
+
+        {/* Mobile-only Protected Routes */}
+        <Route path="/screen2" element={<MobileMiddleware><Screen2 /></MobileMiddleware>} />
+        <Route path="/screen4" element={<MobileMiddleware><ProtectedRoute><Screen4 /></ProtectedRoute></MobileMiddleware>} />
+        <Route path="/screen5" element={<MobileMiddleware><ProtectedRoute><Screen5 /></ProtectedRoute></MobileMiddleware>} />
+        <Route path="/screen6" element={<MobileMiddleware><ProtectedRoute><Screen6 /></ProtectedRoute></MobileMiddleware>} />
+        <Route path="/screen7" element={<MobileMiddleware><ProtectedRoute><Screen7 /></ProtectedRoute></MobileMiddleware>} />
+        <Route path="/screen8" element={<MobileMiddleware><ProtectedRoute><Screen8 /></ProtectedRoute></MobileMiddleware>} />
+        <Route path="/screen9" element={<MobileMiddleware><ProtectedRoute><Screen9 /></ProtectedRoute></MobileMiddleware>} />
+        <Route path="/screen3" element={<MobileMiddleware><ProtectedRoute><Screen3 /></ProtectedRoute></MobileMiddleware>} />
+
+        {/* 404 Route */}
+        <Route path="/404" element={<NotFound />} />
+        <Route path="*" element={<Navigate to="/404" replace />} />
+      </Routes>
+      {/* </NavigationBlocker> */}
+    </HashRouter>
+  );
+}
+
+export default App;
