@@ -16,53 +16,33 @@ import useAuth from '../hooks/useAuth';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { SWAP_CABINETS } from '../data/mockSwapData';
 
 const { Title, Text } = Typography;
+
+const SlotStat = ({ label, value, color }) => (
+    <div style={{ background: '#F9FAFB', borderRadius: '14px', padding: '10px 8px', textAlign: 'center', border: '1px solid #F1F5F9' }}>
+        <Text type="secondary" style={{ display: 'block', fontSize: '11px', marginBottom: '2px' }}>{label}</Text>
+        <Text strong style={{ fontSize: '18px', color }}>{value}</Text>
+    </div>
+);
 
 const Screen1 = () => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
-    const { phone, setPhone, proceedToOtp, isLoading } = useAuth();
+    const { phone, setPhone, isLoading } = useAuth();
     const [searchParams] = useSearchParams();
     const [isScreenLoading, setIsScreenLoading] = useState(true);
     const [error, setError] = useState(null); // 'missing' or 'invalid'
     const [loginMode, setLoginMode] = useState('otp'); // 'otp' or 'password'
     const [password, setPassword] = useState('');
 
-    // Mock chargers database
-    const chargersData = {
-        'AMR001': {
-            name: "AMR Station 1 (HQ)",
-            address: "731 Ratchadaphisek Rd, Bang Sue, Bangkok 10800",
-            chargerType: "AC Type 2",
-            connectorNo: "1",
-            price: "40.00",
-            status: "READY"
-        },
-        'AMR002': {
-            name: "AMR Station Bang Na",
-            address: "123/45 Main Rd, Bang Na, Bangkok 10260",
-            chargerType: "AC Type 2",
-            connectorNo: "1",
-            price: "40.00",
-            status: "READY"
-        },
-        'AMR003': {
-            name: "AMR Station Phaya Thai",
-            address: "Phaya Thai, Bangkok 10400",
-            chargerType: "AC Type 2",
-            connectorNo: "2",
-            price: "40.00",
-            status: "CLOSED"
-        }
-    };
-
-    const chargerId = searchParams.get('chargerId');
-    const stationInfo = chargersData[chargerId] || null;
+    const cabinetId = searchParams.get('cabinetId') || searchParams.get('chargerId');
+    const stationInfo = SWAP_CABINETS[cabinetId] || null;
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (!chargerId) {
+            if (!cabinetId) {
                 setError('missing');
             } else if (!stationInfo) {
                 setError('invalid');
@@ -71,15 +51,15 @@ const Screen1 = () => {
         }, 1500);
 
         if (stationInfo) {
-            document.title = `${stationInfo.name} | EVC Prepaid`;
-            // Save current chargerId to remember it if user edits phone later
-            localStorage.setItem('currentChargerId', chargerId);
+            document.title = `${stationInfo.name} | AMR Battery Swap`;
+            // Save current cabinet id to remember it if user edits phone later.
+            localStorage.setItem('currentCabinetId', cabinetId);
         } else {
-            document.title = `${t('screen1.login_button')} | EVC Prepaid`;
+            document.title = `${t('screen1.login_button')} | AMR Battery Swap`;
         }
 
         return () => clearTimeout(timer);
-    }, [chargerId, stationInfo]);
+    }, [cabinetId, stationInfo, t]);
 
     const getStatusConfig = (status) => {
         switch (status) {
@@ -137,7 +117,7 @@ const Screen1 = () => {
                 setLoginMode('password');
             } else {
                 localStorage.setItem('userPhone', phone);
-                navigate(`/screen2?chargerId=${chargerId}&mode=register`);
+                navigate(`/screen2?cabinetId=${cabinetId}&mode=register`);
             }
         } else {
             // Mock password login logic
@@ -145,8 +125,9 @@ const Screen1 = () => {
             if (password === '123456') {
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('userPhone', phone);
-                const isCharging = localStorage.getItem('isCharging') === 'true';
-                navigate(isCharging ? '/screen5' : '/screen3');
+                const hasActiveSwap = localStorage.getItem('activeSwapSession') === 'true'
+                    || localStorage.getItem('isCharging') === 'true';
+                navigate(hasActiveSwap ? '/screen5' : '/screen3');
             } else {
                 Modal.error({
                     title: t('screen1.password_invalid_title'),
@@ -241,7 +222,7 @@ const Screen1 = () => {
                             subTitle={error === 'missing' ? t('screen1.missing_charger_desc') : t('screen1.invalid_charger_desc')}
                             extra={
                                 <div style={{ color: '#9CA3AF', fontSize: '12px' }}>
-                                    {t('screen1.ref_code')}: {chargerId || 'Unknown'}
+                                    {t('screen1.ref_code')}: {cabinetId || 'Unknown'}
                                 </div>
                             }
                         />
@@ -369,7 +350,7 @@ const Screen1 = () => {
                                 </Space>
                                 <div style={{ paddingLeft: '26px' }}>
                                     <Text strong style={{ fontSize: '15px', color: '#111827' }}>
-                                        {stationInfo.chargerType}
+                                        {stationInfo.batteryModel}
                                     </Text>
                                 </div>
                             </div>
@@ -385,9 +366,15 @@ const Screen1 = () => {
                             }}>
                                 <Text style={{ fontSize: '12px', color: '#6B7280' }}>{t('screen1.connector_label')}</Text>
                                 <Text strong style={{ fontSize: '24px', lineHeight: '1.2', color: statusConfig.isAvailable ? '#EF4444' : '#9CA3AF' }}>
-                                    {stationInfo.connectorNo}
+                                    {stationInfo.fullBatteries}
                                 </Text>
                             </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                            <SlotStat label={t('screen1.slot_full')} value={stationInfo.fullBatteries} color="#10b981" />
+                            <SlotStat label={t('screen1.slot_empty')} value={stationInfo.emptySlots} color="#64748b" />
+                            <SlotStat label={t('screen1.slot_fault')} value={stationInfo.faultSlots} color="#f59e0b" />
                         </div>
 
                         <div style={{
@@ -403,7 +390,7 @@ const Screen1 = () => {
                                 <Text strong style={{ color: '#374151' }}>{t('screen1.price_label')}</Text>
                             </Space>
                             <Text strong style={{ fontSize: '18px', color: statusConfig.isAvailable ? '#EF4444' : '#9CA3AF' }}>
-                                {stationInfo.price} <span style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 400 }}>{t('charging.unit_baht')}/{t('charging.unit_hour')}</span>
+                                {stationInfo.price} <span style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 400 }}>{t('charging.unit_baht')}/{t('charging.unit_swap')}</span>
                             </Text>
                         </div>
                     </Space>
@@ -513,7 +500,7 @@ const Screen1 = () => {
                                     onClick={() => {
                                         if (phone.length === 10) {
                                             localStorage.setItem('userPhone', phone);
-                                            navigate(`/screen2?chargerId=${chargerId}&mode=reset`);
+                                            navigate(`/screen2?cabinetId=${cabinetId}&mode=reset`);
                                         } else {
                                             Modal.error({ title: t('common.error'), content: t('auth.error_phone_invalid'), centered: true });
                                         }

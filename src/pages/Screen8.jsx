@@ -13,19 +13,19 @@ import {
 } from '@ant-design/icons';
 import MobileLayout from '../components/MobileLayout';
 import Header from '../components/Header';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import 'dayjs/locale/th';
 import locale from 'antd/es/date-picker/locale/th_TH';
 import en_locale from 'antd/es/date-picker/locale/en_US';
+import { SWAP_HISTORY_PREVIOUS, SWAP_HISTORY_TODAY, getMoreSwapHistory } from '../data/mockSwapData';
 
 const { Title, Text } = Typography;
 
 const HistoryItem = ({
     stationName,
-    chargerName,
-    connectorNo,
+    cabinetName,
+    pickupSlot,
     startTime,
     endTime,
     energy,
@@ -34,7 +34,6 @@ const HistoryItem = ({
     purchasedDuration,
     isFeedbackDone,
     onGiveFeedback,
-    status = 'completed'
 }) => {
     const { t } = useTranslation();
     return (
@@ -65,7 +64,7 @@ const HistoryItem = ({
                     </div>
                     <div>
                         <Title level={5} style={{ margin: 0, fontSize: '15px', color: '#1e293b' }}>{stationName}</Title>
-                        <Text type="secondary" style={{ fontSize: '12px' }}>{chargerName} • {t('screen6.connector_no')} #{connectorNo}</Text>
+                        <Text type="secondary" style={{ fontSize: '12px' }}>{cabinetName} • {t('screen6.connector_no')} #{pickupSlot}</Text>
                     </div>
                 </div>
                 <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
@@ -84,7 +83,7 @@ const HistoryItem = ({
             <Row gutter={[16, 16]}>
                 <Col span={12}>
                     <Text type="secondary" style={{ fontSize: '11px', display: 'block', marginBottom: '2px' }}>{t('screen6.energy_delivered')}</Text>
-                    <Text strong style={{ fontSize: '14px', color: '#1e293b' }}>{energy} <span style={{ fontSize: '11px', fontWeight: 'normal' }}>kWh</span></Text>
+                    <Text strong style={{ fontSize: '14px', color: '#1e293b' }}>{energy}<span style={{ fontSize: '11px', fontWeight: 'normal' }}>%</span></Text>
                 </Col>
                 <Col span={12} style={{ textAlign: 'right' }}>
                     <Text type="secondary" style={{ fontSize: '11px', display: 'block', marginBottom: '2px' }}>{t('screen6.duration')}</Text>
@@ -164,7 +163,6 @@ const GroupTitle = ({ children }) => (
 
 const Screen8 = () => {
     const { t, i18n } = useTranslation();
-    const navigate = useNavigate();
     const [isMoreLoading, setIsMoreLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
@@ -183,20 +181,17 @@ const Screen8 = () => {
         dayjs().subtract(1, 'day')
     ]);
 
-    const initialHistory = [
-        { id: 'prev-1', stationName: 'AMR Station Siam', chargerName: 'THN0000000003 • AC Type 2', connectorNo: '1', startTime: '20 Jan 2026 • 18:30', endTime: '20 Jan 2026 • 21:50', energy: '8.22', cost: '180.00', duration: '03:20:00', purchasedDuration: '04:00:00', isFeedbackDone: true },
-        { id: 'prev-2', stationName: 'AMR Station Asok', chargerName: 'THN0000000004 • AC Type 2', connectorNo: '1', startTime: '19 Jan 2026 • 10:00', endTime: '19 Jan 2026 • 16:00', energy: '15.50', cost: '310.00', duration: '06:00:00', purchasedDuration: '06:00:00', isFeedbackDone: false },
-    ];
+    const withPackage = useCallback((items) => items.map(item => ({
+        ...item,
+        purchasedDuration: t('screen6.mock_purchased_duration')
+    })), [t]);
 
-    const [history, setHistory] = useState(initialHistory);
+    const [history, setHistory] = useState(() => withPackage(SWAP_HISTORY_PREVIOUS));
 
-    const [todaySessions, setTodaySessions] = useState([
-        { id: 'today-1', stationName: 'AMR Station Bang Na', chargerName: 'THN0000000001 • AC Type 2', connectorNo: '1', startTime: '21 Jan 2026 • 09:20', endTime: '21 Jan 2026 • 12:35', energy: '6.45', cost: '125.00', duration: '03:15:00', purchasedDuration: '04:00:00', isFeedbackDone: false },
-        { id: 'today-2', stationName: 'AMR Station Hua Mak', chargerName: 'THN0000000002 • AC Type 2', connectorNo: '2', startTime: '21 Jan 2026 • 14:15', endTime: '21 Jan 2026 • 20:00', energy: '12.30', cost: '250.00', duration: '05:45:00', purchasedDuration: '06:00:00', isFeedbackDone: false },
-    ]);
+    const [todaySessions, setTodaySessions] = useState(() => withPackage(SWAP_HISTORY_TODAY));
 
     useEffect(() => {
-        document.title = `${t('screen8.title')} | EVC Prepaid`;
+        document.title = `${t('screen8.title')} | AMR Battery Swap`;
         dayjs.locale(i18n.language);
         const timer = setTimeout(() => setIsLoading(false), 1000);
         return () => clearTimeout(timer);
@@ -234,10 +229,7 @@ const Screen8 = () => {
         isFetching.current = true;
 
         setTimeout(() => {
-            const nextBatch = [
-                { id: `load-${loadCount}-1`, stationName: 'AMR Station Khlong San', chargerName: `THN000000000${5 + loadCount * 2} • AC Type 2`, connectorNo: '1', startTime: '18 Jan 2026 • 09:00', endTime: '18 Jan 2026 • 11:30', energy: '5.10', cost: '100.00', duration: '02:30:00', purchasedDuration: '03:00:00', isFeedbackDone: false },
-                { id: `load-${loadCount}-2`, stationName: 'AMR Station Rangsit', chargerName: `THN000000000${6 + loadCount * 2} • AC Type 2`, connectorNo: '2', startTime: '17 Jan 2026 • 13:45', endTime: '17 Jan 2026 • 16:00', energy: '4.80', cost: '90.00', duration: '02:15:00', purchasedDuration: '02:00:00', isFeedbackDone: false },
-            ];
+            const nextBatch = withPackage(getMoreSwapHistory(loadCount));
 
             setHistory(prev => [...prev, ...nextBatch]);
             setLoadCount(prev => prev + 1);
@@ -248,7 +240,7 @@ const Screen8 = () => {
                 setHasMore(false);
             }
         }, 800);
-    }, [loadCount, hasMore]);
+    }, [loadCount, hasMore, withPackage]);
     useEffect(() => {
         const observerTarget = loadMoreRef.current;
         const observer = new IntersectionObserver(

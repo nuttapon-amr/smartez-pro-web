@@ -23,13 +23,13 @@ const Screen2 = () => {
 
     useEffect(() => {
         const modeLabel = mode === 'reset' ? t('screen1.otp_mode_reset') : t('screen1.otp_mode_register');
-        document.title = `${t('screen2.title')} (${modeLabel}) | EVC Prepaid`;
+        document.title = `${t('screen2.title')} (${modeLabel}) | AMR Battery Swap`;
 
         // If phone is missing, it's an invalid access to this screen
         if (!phone) {
-            const savedChargerId = localStorage.getItem('currentChargerId');
-            if (savedChargerId) {
-                navigate(`/screen1?chargerId=${savedChargerId}`, { replace: true });
+            const savedCabinetId = localStorage.getItem('currentCabinetId') || localStorage.getItem('currentChargerId');
+            if (savedCabinetId) {
+                navigate(`/screen1?cabinetId=${savedCabinetId}`, { replace: true });
             } else {
                 navigate('/screen1', { replace: true });
             }
@@ -38,7 +38,7 @@ const Screen2 = () => {
 
         // Automatically send OTP when screen 2 loads if phone exists
         login();
-    }, [phone, navigate]);
+    }, [login, mode, navigate, phone, t]);
 
     useEffect(() => {
         let timer;
@@ -91,10 +91,11 @@ const Screen2 = () => {
 
         // Success: save password (mock) and proceed
         localStorage.setItem('isLoggedIn', 'true');
-        const isCharging = localStorage.getItem('isCharging') === 'true';
+        const hasActiveSwap = localStorage.getItem('activeSwapSession') === 'true'
+            || localStorage.getItem('isCharging') === 'true';
         localStorage.removeItem('userPhone');
 
-        navigate(isCharging ? '/screen5' : '/screen3');
+        navigate(hasActiveSwap ? '/screen5' : '/screen3');
     };
 
     const formatPhone = (p) => {

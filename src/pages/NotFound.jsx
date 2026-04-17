@@ -8,7 +8,7 @@ const NotFound = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = `${t('common.not_found')} | EVC Prepaid`;
+    document.title = `${t('common.not_found')} | AMR Battery Swap`;
   }, [t]);
 
   return (

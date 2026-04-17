@@ -14,6 +14,7 @@ import MobileLayout from '../components/MobileLayout';
 import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { SWAP_SUMMARY } from '../data/mockSwapData';
 
 const { Title, Text } = Typography;
 
@@ -38,28 +39,28 @@ const Screen6 = () => {
 
     // Mock data based on the requested UI
     const summaryData = {
-        stationName: t('mock_station.name'),
-        stationAddress: t('mock_station.address'),
-        chargerName: 'THN0000000000',
-        chargerPointType: 'AC Type 2',
-        connectorNo: '1',
-        powerDelivered: 13.34,
-        totalCost: 350.00,
-        unitPrice: 26.24,
-        totalChargingTime: '03:35:00',
+        stationName: t(SWAP_SUMMARY.stationNameKey),
+        stationAddress: t(SWAP_SUMMARY.stationAddressKey),
+        cabinetCode: SWAP_SUMMARY.cabinetCode,
+        batteryModel: SWAP_SUMMARY.batteryModel,
+        pickupSlot: SWAP_SUMMARY.pickupSlot,
+        powerDelivered: SWAP_SUMMARY.pickupBatterySoc,
+        totalCost: SWAP_SUMMARY.totalCost,
+        unitPrice: SWAP_SUMMARY.unitPrice,
+        totalChargingTime: SWAP_SUMMARY.serviceTime,
         purchasedDuration: t('screen6.mock_purchased_duration'),
-        chargingStartDate: '2025-12-15T09:20:00',
-        chargingEndDate: '2025-12-15T12:55:00',
+        chargingStartDate: SWAP_SUMMARY.startedAt,
+        chargingEndDate: SWAP_SUMMARY.completedAt,
     };
 
     useEffect(() => {
-        document.title = `${t('screen6.title')} | EVC Prepaid`;
+        document.title = `${t('screen6.title')} | AMR Battery Swap`;
         // Mock loading data
         const timer = setTimeout(() => {
             setIsLoading(false);
         }, 2000);
         return () => clearTimeout(timer);
-    }, []);
+    }, [t]);
 
     if (isLoading) {
         return (
@@ -164,7 +165,7 @@ const Screen6 = () => {
                                 {t('screen6.energy_delivered')}
                             </Text>
                             <Title level={4} style={{ margin: 0, fontSize: '18px' }}>
-                                {formatNumber(summaryData.powerDelivered)} <span style={{ fontSize: '12px', fontWeight: 'normal' }}>kWh</span>
+                                {formatNumber(summaryData.powerDelivered)} <span style={{ fontSize: '12px', fontWeight: 'normal' }}>%</span>
                             </Title>
                         </div>
                         <div style={{ textAlign: 'right' }}>
@@ -182,13 +183,13 @@ const Screen6 = () => {
                             <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
                                 {t('screen6.charger_id')}
                             </Text>
-                            <Text strong style={{ fontSize: '15px' }}>{summaryData.chargerName}</Text>
+                            <Text strong style={{ fontSize: '15px' }}>{summaryData.cabinetCode}</Text>
                         </div>
                         <div style={{ textAlign: 'right' }}>
                             <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
                                 {t('screen6.connector_no')}
                             </Text>
-                            <Text strong style={{ fontSize: '15px' }}>#{summaryData.connectorNo}</Text>
+                            <Text strong style={{ fontSize: '15px' }}>#{summaryData.pickupSlot}</Text>
                         </div>
                     </div>
 
@@ -196,7 +197,7 @@ const Screen6 = () => {
                         <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '4px' }}>
                             {t('screen6.connector_type')}
                         </Text>
-                        <Text strong style={{ fontSize: '15px' }}>{summaryData.chargerPointType}</Text>
+                        <Text strong style={{ fontSize: '15px' }}>{summaryData.batteryModel}</Text>
                     </div>
                 </div>
 

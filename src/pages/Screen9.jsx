@@ -14,6 +14,7 @@ import MobileLayout from '../components/MobileLayout';
 import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { SWAP_RECEIPT } from '../data/mockSwapData';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -24,7 +25,15 @@ const Screen9 = () => {
     const [isTaxModalVisible, setIsTaxModalVisible] = useState(false);
     const [form] = Form.useForm();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [hasRequestedTax, setHasRequestedTax] = useState(false);
+    const [hasRequestedTax, setHasRequestedTax] = useState(() => {
+        const requestedReceipts = localStorage.getItem('requestedTaxReceipts');
+        if (!requestedReceipts) return false;
+        return JSON.parse(requestedReceipts).includes(SWAP_RECEIPT.receiptNo);
+    });
+    const receiptData = {
+        ...SWAP_RECEIPT,
+        purchasedDuration: t('screen6.mock_purchased_duration')
+    };
 
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
@@ -36,16 +45,7 @@ const Screen9 = () => {
     };
 
     useEffect(() => {
-        document.title = `${t('screen9.title')} | EVC Prepaid`;
-
-        // Check if tax invoice was already requested for this specific receipt
-        const requestedReceipts = localStorage.getItem('requestedTaxReceipts');
-        if (requestedReceipts) {
-            const parsed = JSON.parse(requestedReceipts);
-            if (parsed.includes(receiptData.receiptNo)) {
-                setHasRequestedTax(true);
-            }
-        }
+        document.title = `${t('screen9.title')} | AMR Battery Swap`;
 
         // Load saved tax info from localStorage
         const savedTaxInfo = localStorage.getItem('taxInvoiceInfo');
@@ -57,27 +57,7 @@ const Screen9 = () => {
                 console.error("Failed to parse saved tax info", e);
             }
         }
-    }, [form]);
-
-    // Mock Receipt Data
-    const receiptData = {
-        receiptNo: 'REC-2026-000142',
-        date: '2026-01-21', // ISO format for formatting
-        time: '09:20 - 12:35',
-        stationName: 'AMR Station Bang Na',
-        chargerName: 'THN0000000001',
-        chargerType: 'AC Type 2',
-        connectorNo: '1',
-        energy: '6.45',
-        duration: '03:15:00',
-        purchasedDuration: '04:00:00',
-        unitPrice: '70.00',
-        totalAmount: '125.00',
-        discount: '0.00',
-        netAmount: '125.00',
-        vatAmount: '8.18', // 7% of 125 included or excluded? Usually included for retail.
-        paymentMethod: 'Prepaid Wallet'
-    };
+    }, [form, t]);
 
     const handleDownload = () => {
         message.loading({ content: t('screen9.preparing_file'), key: 'download' });
@@ -95,8 +75,8 @@ const Screen9 = () => {
             // Track that THIS specific receipt has requested tax
             const requestedReceipts = localStorage.getItem('requestedTaxReceipts') || '[]';
             const parsed = JSON.parse(requestedReceipts);
-            if (!parsed.includes(receiptData.receiptNo)) {
-                parsed.push(receiptData.receiptNo);
+            if (!parsed.includes(SWAP_RECEIPT.receiptNo)) {
+                parsed.push(SWAP_RECEIPT.receiptNo);
                 localStorage.setItem('requestedTaxReceipts', JSON.stringify(parsed));
             }
 
@@ -161,7 +141,7 @@ const Screen9 = () => {
                             </Col>
                             <Col span={24}>
                                 <Text type="secondary" style={{ fontSize: '11px', display: 'block' }}>{t('screen6.charger_id')}</Text>
-                                <Text strong style={{ fontSize: '14px' }}>{receiptData.chargerName} • {receiptData.chargerType} ({t('screen6.connector_no')} #{receiptData.connectorNo})</Text>
+                                <Text strong style={{ fontSize: '14px' }}>{receiptData.cabinetCode} • {receiptData.batteryModel} ({t('screen6.connector_no')} #{receiptData.pickupSlot})</Text>
                             </Col>
                         </Row>
 
@@ -169,11 +149,11 @@ const Screen9 = () => {
                         <div style={{ background: '#f8fafc', borderRadius: '16px', padding: '16px', marginBottom: '24px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                                 <Text type="secondary" style={{ fontSize: '12px' }}>{t('screen5.energy_delivered')}</Text>
-                                <Text strong style={{ fontSize: '13px' }}>{receiptData.energy} kWh</Text>
+                                <Text strong style={{ fontSize: '13px' }}>{receiptData.pickupBatterySoc}%</Text>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                                 <Text type="secondary" style={{ fontSize: '12px' }}>{t('screen6.duration')}</Text>
-                                <Text strong style={{ fontSize: '13px' }}>{receiptData.duration}</Text>
+                                <Text strong style={{ fontSize: '13px' }}>{receiptData.serviceTime}</Text>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                                 <Text type="secondary" style={{ fontSize: '12px' }}>{t('history.purchased_duration')}</Text>
@@ -181,11 +161,11 @@ const Screen9 = () => {
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                                 <Text type="secondary" style={{ fontSize: '12px' }}>{t('history.price_per_hour')}</Text>
-                                <Text strong style={{ fontSize: '13px' }}>฿{receiptData.unitPrice}/{t('charging.unit_hour')}</Text>
+                                <Text strong style={{ fontSize: '13px' }}>฿{receiptData.unitPrice}/{t('charging.unit_swap')}</Text>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <Text type="secondary" style={{ fontSize: '12px' }}>VAT 7%  </Text>
-                                <Text strong style={{ fontSize: '13px' }}>฿8.75</Text>
+                                <Text strong style={{ fontSize: '13px' }}>฿{receiptData.vatAmount}</Text>
                             </div>
                         </div>
 

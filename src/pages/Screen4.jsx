@@ -22,14 +22,14 @@ const Screen4 = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [uploading, setUploading] = useState(false);
 
-    // Mock price from state or default to 140.00
-    const amountToPay = location.state?.price || 140.00;
-    const hours = location.state?.hours || 2;
+    // Mock price from state or default to one battery swap.
+    const amountToPay = location.state?.price || 45.00;
+    const hours = location.state?.hours || 1;
 
     const handleDownloadQR = () => {
         const link = document.createElement('a');
         link.href = qrImage;
-        link.download = `EVC_Payment_QR_${amountToPay.toFixed(2)}.png`;
+        link.download = `AMR_Swap_Payment_QR_${amountToPay.toFixed(2)}.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -37,8 +37,9 @@ const Screen4 = () => {
     };
 
     React.useEffect(() => {
-        const chargingStatus = localStorage.getItem('isCharging') === 'true';
-        if (chargingStatus) {
+        const hasActiveSwap = localStorage.getItem('activeSwapSession') === 'true'
+            || localStorage.getItem('isCharging') === 'true';
+        if (hasActiveSwap) {
             navigate('/screen5');
         }
     }, [navigate]);
@@ -56,7 +57,7 @@ const Screen4 = () => {
 
             if (isSuccess) {
                 message.success(t('payment.success_slip'));
-                localStorage.setItem('isCharging', 'true');
+                localStorage.setItem('activeSwapSession', 'true');
                 navigate('/screen5');
             } else {
                 Modal.error({
@@ -84,7 +85,7 @@ const Screen4 = () => {
             }
             return true;
         },
-        customRequest: ({ file, onSuccess }) => {
+        customRequest: ({ onSuccess }) => {
             setTimeout(() => {
                 onSuccess("ok");
                 handleUploadSlip();
@@ -264,5 +265,3 @@ const Screen4 = () => {
 };
 
 export default Screen4;
-
-

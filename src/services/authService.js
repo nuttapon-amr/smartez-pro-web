@@ -1,5 +1,3 @@
-import api from './api';
-
 const authService = {
     login: async (phone) => {
         // In a real app, this would call an API:
@@ -34,7 +32,9 @@ const authService = {
     logout: async () => {
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('userPhone');
+        localStorage.removeItem('activeSwapSession');
         localStorage.removeItem('isCharging');
+        localStorage.removeItem('currentCabinetId');
         localStorage.removeItem('currentChargerId');
         return { success: true };
     }

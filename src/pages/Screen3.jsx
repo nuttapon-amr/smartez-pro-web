@@ -19,32 +19,32 @@ const Screen3 = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [selectedHour, setSelectedHour] = useState(null);
-    const pricePerUnit = 10.00;
-    const estimatedKWhPerHour = 7;
 
     React.useEffect(() => {
-        document.title = `${t('screen3.title')} | EVC Prepaid`;
-        const chargingStatus = localStorage.getItem('isCharging') === 'true';
-        if (chargingStatus) {
+        document.title = `${t('screen3.title')} | AMR Battery Swap`;
+        const hasActiveSwap = localStorage.getItem('activeSwapSession') === 'true'
+            || localStorage.getItem('isCharging') === 'true';
+        if (hasActiveSwap) {
             navigate('/screen5');
         }
-    }, [navigate]);
+    }, [navigate, t]);
 
     const handlePayment = () => {
         if (!selectedHour || !selectedOption) return;
         navigate('/screen4', {
             state: {
                 price: selectedOption.price,
-                hours: selectedOption.value
+                hours: selectedOption.value,
+                packageLabel: selectedOption.label
             }
         });
     };
 
     const hourOptions = [
-        { label: `1 ${t('charging.unit_hour')}`, value: 1, price: 40 },
-        { label: `2 ${t('charging.unit_hour')}`, value: 2, price: 80 },
-        { label: `4 ${t('charging.unit_hour')}`, value: 4, price: 160 },
-        { label: `6 ${t('charging.unit_hour')}`, value: 6, price: 240 },
+        { label: `1 ${t('charging.unit_swap')}`, value: 1, price: 45 },
+        { label: `3 ${t('charging.unit_swap')}`, value: 3, price: 129 },
+        { label: `7 ${t('charging.unit_swap')}`, value: 7, price: 280 },
+        { label: `30 ${t('charging.unit_swap')}`, value: 30, price: 990 },
     ];
 
     const selectedOption = hourOptions.find(opt => opt.value === selectedHour);
@@ -69,7 +69,7 @@ const Screen3 = () => {
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                             <div style={{
                                 padding: '10px',
-                                backgroundColor: '#fef2f2',
+                                backgroundColor: '#ecfdf5',
                                 borderRadius: '12px',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -98,13 +98,13 @@ const Screen3 = () => {
                             <Row gutter={16}>
                                 <Col span={12}>
                                     <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>{t('screen6.connector_no')}</Text>
-                                    <Text strong style={{ fontSize: '14px' }}>1</Text>
+                                    <Text strong style={{ fontSize: '14px' }}>ช่อง 04</Text>
                                 </Col>
                                 <Col span={12}>
                                     <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>{t('screen6.connector_type')}</Text>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                         <ThunderboltFilled style={{ color: '#10b981', fontSize: '14px' }} />
-                                        <Text strong style={{ fontSize: '14px' }}>AC Type 2</Text>
+                                        <Text strong style={{ fontSize: '14px' }}>AMR-M2 72V</Text>
                                     </div>
                                 </Col>
                             </Row>

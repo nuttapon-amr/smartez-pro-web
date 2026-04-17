@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import chargingService from '../services/chargingService';
+import swapService from '../services/swapService';
 
 export const useHistory = () => {
     const [history, setHistory] = useState([]);
@@ -8,7 +8,7 @@ export const useHistory = () => {
     const fetchHistory = async () => {
         setIsLoading(true);
         try {
-            const data = await chargingService.getHistory();
+            const data = await swapService.getHistory();
             setHistory(data);
         } catch (error) {
             console.error('Failed to fetch history', error);

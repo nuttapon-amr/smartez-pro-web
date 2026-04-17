@@ -1,6 +1,6 @@
 import React from 'react';
 
-const MobileLayout = ({ children, title, showBack = false, onBack }) => {
+const MobileLayout = ({ children }) => {
   return (
     <div style={{
       width: '100%',

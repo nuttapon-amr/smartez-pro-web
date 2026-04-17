@@ -58,39 +58,39 @@ const Screen7 = () => {
     const [activeTab, setActiveTab] = useState('daily');
 
     useEffect(() => {
-        document.title = `${t('screen7.title')} | EVC Prepaid`;
+        document.title = `${t('screen7.title')} | AMR Battery Swap`;
         const timer = setTimeout(() => setIsLoading(false), 800);
         return () => clearTimeout(timer);
-    }, []);
+    }, [t]);
 
     const dailyData = {
-        totalEnergy: '12.45',
-        totalTime: '04:20:15',
+        totalEnergy: '2',
+        totalTime: '00:05:40',
         totalSessions: '2',
-        totalCost: '250.00',
+        totalCost: '90.00',
         sessions: [
-            { id: 1, title: 'AMR Station A', date: '21 Jan 2026 • 09:20', energy: '6.45', cost: '125.00' },
-            { id: 2, title: 'AMR Station B', date: '21 Jan 2026 • 14:15', energy: '6.00', cost: '125.00' },
+            { id: 1, title: 'AMR Swap Station Bang Na', date: '21 Jan 2026 • 09:20', energy: '1', cost: '45.00' },
+            { id: 2, title: 'AMR Swap Station Hua Mak', date: '21 Jan 2026 • 14:15', energy: '1', cost: '45.00' },
         ]
     };
 
     const monthlyData = {
-        totalEnergy: '145.20',
-        totalTime: '48:15:30',
+        totalEnergy: '14',
+        totalTime: '00:42:30',
         totalSessions: '14',
-        totalCost: '2,840.00',
+        totalCost: '630.00',
         sessions: [
-            { id: 3, title: 'Monthly Summary (Jan)', date: 'January 2026', energy: '145.20', cost: '2,840.00' },
+            { id: 3, title: 'Monthly Summary (Jan)', date: 'January 2026', energy: '14', cost: '630.00' },
         ]
     };
 
     const yearlyData = {
-        totalEnergy: '1,250.40',
-        totalTime: '1420:30:00',
+        totalEnergy: '112',
+        totalTime: '05:36:00',
         totalSessions: '112',
-        totalCost: '25,480.00',
+        totalCost: '5,040.00',
         sessions: [
-            { id: 4, title: 'Yearly Summary (2026)', date: 'Year 2026', energy: '1,250.40', cost: '25,480.00' },
+            { id: 4, title: 'Yearly Summary (2026)', date: 'Year 2026', energy: '112', cost: '5,040.00' },
         ]
     };
 
@@ -161,7 +161,7 @@ const Screen7 = () => {
                         <StatItem
                             label={t('summary.energy_received')}
                             value={data.totalEnergy}
-                            unit="kWh"
+                            unit={t('charging.unit_swap')}
                             icon={<ThunderboltFilled />}
                             color="#f59e0b"
                             bgColor="#fffbeb"
@@ -201,10 +201,10 @@ const Screen7 = () => {
                             style={{
                                 height: '56px',
                                 borderRadius: '16px',
-                                backgroundColor: '#EF4444',
+                                backgroundColor: '#10b981',
                                 fontWeight: 'bold',
                                 fontSize: '16px',
-                                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)',
+                                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)',
                                 border: 'none'
                             }}
                             onClick={() => navigate('/screen8')}

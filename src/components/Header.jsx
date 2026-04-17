@@ -14,7 +14,7 @@ import useAuth from '../hooks/useAuth';
 
 const { Title, Text } = Typography;
 
-const Header = ({ title, showBack = true, onBack, showMenu = true }) => {
+const Header = ({ title, showMenu = true }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { t, i18n } = useTranslation();

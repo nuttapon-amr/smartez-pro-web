@@ -15,11 +15,12 @@ export const useAuth = () => {
 
     useEffect(() => {
         const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-        const isCharging = localStorage.getItem('isCharging') === 'true';
+        const hasActiveSwap = localStorage.getItem('activeSwapSession') === 'true'
+            || localStorage.getItem('isCharging') === 'true';
         const publicScreens = ['/screen1', '/screen2', '/'];
 
         if (isLoggedIn && publicScreens.includes(location.pathname)) {
-            navigate(isCharging ? '/screen5' : '/screen3', { replace: true });
+            navigate(hasActiveSwap ? '/screen5' : '/screen3', { replace: true });
         }
     }, [navigate, location.pathname]);
 
@@ -34,7 +35,7 @@ export const useAuth = () => {
         }
     }, []);
 
-    const login = async () => {
+    const login = useCallback(async () => {
         if (!phone) {
             Modal.error({ title: t('common.error'), content: t('auth.error_phone_required'), centered: true });
             return;
@@ -50,12 +51,12 @@ export const useAuth = () => {
             if (location.pathname !== '/screen2') {
                 navigate('/screen2');
             }
-        } catch (error) {
+        } catch {
             Modal.error({ title: t('common.error'), content: t('auth.error_generic'), centered: true });
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [location.pathname, navigate, phone, t]);
 
     const verifyOtp = async () => {
         if (otp.length !== 6) return;
@@ -80,7 +81,7 @@ export const useAuth = () => {
                     maskClosable: true
                 });
             }
-        } catch (error) {
+        } catch {
             setError(t('auth.otp_error_generic'));
             Modal.error({
                 title: t('common.error'),
@@ -116,7 +117,7 @@ export const useAuth = () => {
         try {
             await authService.login(phone);
             Modal.success({ title: t('common.success'), content: t('auth.otp_resend_success'), centered: true });
-        } catch (error) {
+        } catch {
             Modal.error({ title: t('common.error'), content: t('auth.otp_resend_error'), centered: true });
         } finally {
             setIsLoading(false);

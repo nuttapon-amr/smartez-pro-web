@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import chargingService from '../services/chargingService';
+import swapService from '../services/swapService';
 
-export const useCharging = () => {
+export const useSwapSession = () => {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(true);
-    const [isCharging, setIsCharging] = useState(false);
+    const [hasActiveSwap, setHasActiveSwap] = useState(false);
 
     const checkStatus = async () => {
         setIsLoading(true);
         try {
-            const result = await chargingService.getStatus();
-            setIsCharging(result.isCharging);
+            const result = await swapService.getStatus();
+            setHasActiveSwap(result.hasActiveSwap);
         } catch (error) {
-            console.error('Failed to fetch charging status', error);
+            console.error('Failed to fetch swap status', error);
         } finally {
             setIsLoading(false);
         }
@@ -23,21 +23,21 @@ export const useCharging = () => {
         checkStatus();
     }, []);
 
-    const stopCharging = async () => {
+    const completeSwap = async () => {
         try {
-            await chargingService.stopCharging();
+            await swapService.completeSwap();
             navigate('/screen6');
         } catch (error) {
-            console.error('Failed to stop charging', error);
+            console.error('Failed to complete swap', error);
         }
     };
 
     return {
         isLoading,
-        isCharging,
-        stopCharging,
+        hasActiveSwap,
+        completeSwap,
         refreshStatus: checkStatus
     };
 };
 
-export default useCharging;
+export default useSwapSession;

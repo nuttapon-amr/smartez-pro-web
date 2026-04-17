@@ -13,7 +13,7 @@ const NavigationBlocker = ({ children }) => {
         // Push a dummy state to history so there's always a "future" to go back from
         window.history.pushState(null, null, window.location.href);
 
-        const handlePopState = (e) => {
+        const handlePopState = () => {
             // Prevent the default behavior and force the browser forward
             window.history.go(1);
         };
