@@ -42,7 +42,7 @@
     "screen1": {
         "login_options": "Login Options",
         "otp_mode": "Register",
-        "password_mode": "Login with Password",
+        "password_mode": "Login",
         "phone_placeholder": "Enter phone number",
         "password_placeholder": "Enter your password",
         "login_button": "Login",

@@ -1,335 +1,135 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Typography, Space, Divider, Modal, Input } from 'antd';
-import { EditOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
-import MobileLayout from '../components/MobileLayout';
-import useAuth from '../hooks/useAuth';
-import OTPInput from '../components/OTPInput';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Button, Card, Divider, Result, Spin, Typography } from 'antd';
+import { DollarCircleOutlined, EnvironmentOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import MobileLayout from '../components/MobileLayout';
+import { SWAP_CABINETS } from '../data/mockSwapData';
 
 const { Title, Text } = Typography;
+
+const SlotStat = ({ label, value, color }) => (
+    <div style={{ background: '#F9FAFB', borderRadius: '14px', padding: '10px 8px', textAlign: 'center', border: '1px solid #F1F5F9' }}>
+        <Text type="secondary" style={{ display: 'block', fontSize: '11px', marginBottom: '2px' }}>{label}</Text>
+        <Text strong style={{ fontSize: '18px', color }}>{value}</Text>
+    </div>
+);
 
 const Screen2 = () => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
+    const location = useLocation();
     const [searchParams] = useSearchParams();
-    const mode = searchParams.get('mode'); // 'register' or 'reset'
-    const { phone, otp, setOtp, verifyOtp, isLoading, login, editPhone, resendOtp, error } = useAuth();
-    const [countdown, setCountdown] = useState(60);
-    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [passwordError, setPasswordError] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+
+    const cabinetId = searchParams.get('cabinetId') || searchParams.get('chargerId');
+    const stationInfo = cabinetId ? SWAP_CABINETS[cabinetId] || null : null;
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
     useEffect(() => {
-        const modeLabel = mode === 'reset' ? t('screen1.otp_mode_reset') : t('screen1.otp_mode_register');
-        document.title = `${t('screen2.title')} (${modeLabel}) | AMR Battery Swap`;
+        const timer = setTimeout(() => setIsLoading(false), 700);
+        if (cabinetId) localStorage.setItem('currentCabinetId', cabinetId);
+        document.title = `${stationInfo?.name || t('screen1.station_info')} | AMR Battery Swap`;
+        return () => clearTimeout(timer);
+    }, [cabinetId, stationInfo, t]);
 
-        // If phone is missing, it's an invalid access to this screen
-        if (!phone) {
-            const savedCabinetId = localStorage.getItem('currentCabinetId') || localStorage.getItem('currentChargerId');
-            if (savedCabinetId) {
-                navigate(`/screen1?cabinetId=${savedCabinetId}`, { replace: true });
-            } else {
-                navigate('/screen1', { replace: true });
-            }
-            return;
-        }
-
-        // Automatically send OTP when screen 2 loads if phone exists
-        login();
-    }, [login, mode, navigate, phone, t]);
-
-    useEffect(() => {
-        let timer;
-        if (countdown > 0) {
-            timer = setInterval(() => {
-                setCountdown(prev => prev - 1);
-            }, 1000);
-        }
-        return () => clearInterval(timer);
-    }, [countdown]);
-
-    const handleResend = () => {
-        if (countdown === 0) {
-            Modal.confirm({
-                title: t('screen2.resend_button'),
-                content: `${t('screen2.desc')} ${formatPhone(phone)}`,
-                okText: t('common.confirm'),
-                cancelText: t('common.cancel'),
-                centered: true,
-                onOk: () => {
-                    resendOtp();
-                    setCountdown(60);
-                }
-            });
-        }
+    const goToAuth = () => {
+        const authPath = cabinetId ? `/screen1?cabinetId=${cabinetId}` : '/screen1';
+        navigate(authPath, { state: { from: location } });
     };
 
-    const handleVerify = async () => {
-        const result = await verifyOtp();
-        if (result?.success) {
-            setIsPasswordModalOpen(true);
-        }
-    };
+    if (isLoading) {
+        return (
+            <MobileLayout>
+                <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Spin size="large" />
+                </div>
+            </MobileLayout>
+        );
+    }
 
-    const handleSavePassword = () => {
-        if (!newPassword) {
-            setPasswordError(t('screen2.password_required'));
-            return;
-        }
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
-        if (!passwordRegex.test(newPassword)) {
-            setPasswordError(t('screen2.password_complexity'));
-            return;
-        }
-
-        if (newPassword !== confirmPassword) {
-            setPasswordError(t('screen2.password_mismatch'));
-            return;
-        }
-
-        // Success: save password (mock) and proceed
-        localStorage.setItem('isLoggedIn', 'true');
-        const hasActiveSwap = localStorage.getItem('activeSwapSession') === 'true'
-            || localStorage.getItem('isCharging') === 'true';
-        localStorage.removeItem('userPhone');
-
-        navigate(hasActiveSwap ? '/screen5' : '/screen3');
-    };
-
-    const formatPhone = (p) => {
-        if (!p) return '';
-        return p.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
-    };
+    if (!cabinetId || !stationInfo) {
+        return (
+            <MobileLayout>
+                <div style={{ minHeight: '100vh', padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Result
+                        status="warning"
+                        title={!cabinetId ? t('screen1.missing_charger_title') : t('screen1.invalid_charger_title')}
+                        subTitle={!cabinetId ? t('screen1.missing_charger_desc') : t('screen1.invalid_charger_desc')}
+                        extra={<Button type="primary" onClick={goToAuth}>{t('screen1.login_button')}</Button>}
+                    />
+                </div>
+            </MobileLayout>
+        );
+    }
 
     return (
         <MobileLayout>
-            <div style={{
-                padding: '24px',
-                display: 'flex',
-                flexDirection: 'column',
-                minHeight: '100vh',
-                background: 'linear-gradient(180deg, #FFF5F5 0%, #FFFFFF 100%)',
-                fontFamily: "'Prompt', sans-serif"
-            }}>
-
-                {/* Language Toggle for Screen2 (No Header) */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+            <div style={{ minHeight: '100vh', padding: '24px', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%)' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '18px' }}>
                     <Button
                         type="text"
                         onClick={() => i18n.changeLanguage(i18n.language === 'th' ? 'en' : 'th')}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            background: 'rgba(255, 255, 255, 0.8)',
-                            borderRadius: '12px',
-                            padding: '4px 12px',
-                            height: 'auto',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-                        }}
+                        style={{ background: 'rgba(255,255,255,0.85)', borderRadius: '12px', height: 'auto', padding: '4px 12px', fontWeight: 700 }}
                     >
-                        <span style={{ fontSize: '18px' }}>
-                            {i18n.language === 'th' ? '🇹🇭' : '🇬🇧'}
-                        </span>
-                        <Text strong style={{ fontSize: '13px', color: '#1f2937' }}>
-                            {i18n.language === 'th' ? 'TH' : 'EN'}
-                        </Text>
+                        {i18n.language === 'th' ? 'TH' : 'EN'}
                     </Button>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', marginTop: '40px' }}>
+                <Card style={{ borderRadius: '24px', border: '1px solid #D1FAE5', boxShadow: '0 12px 30px rgba(16,185,129,0.10)' }} styles={{ body: { padding: '22px' } }}>
+                    <Text type="secondary" style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '1px', textTransform: 'uppercase' }}>
+                        {t('screen1.station_label')}
+                    </Text>
+                    <Title level={3} style={{ margin: '8px 0 10px 0', color: '#0f172a' }}>{stationInfo.name}</Title>
 
-                    {/* Security Icon Badge */}
-                    <div style={{
-                        width: '120px',
-                        height: '120px',
-                        backgroundColor: '#FFFFFF',
-                        borderRadius: '40px',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginBottom: '32px',
-                        boxShadow: '0 12px 24px rgba(239, 68, 68, 0.12)',
-                        border: '2px solid #FEE2E2',
-                        transform: 'rotate(-5deg)'
-                    }}>
-                        <div style={{ transform: 'rotate(5deg)' }}>
-                            <SafetyCertificateOutlined style={{ fontSize: '48px', color: '#EF4444' }} />
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '18px' }}>
+                        <EnvironmentOutlined style={{ color: '#10b981', marginTop: '3px' }} />
+                        <Text type="secondary" style={{ fontSize: '13px', lineHeight: 1.5 }}>{stationInfo.address}</Text>
+                    </div>
+
+                    <Divider style={{ margin: '14px 0' }} />
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'center', background: '#F8FAFC', padding: '14px', borderRadius: '16px', marginBottom: '12px' }}>
+                        <div>
+                            <Text type="secondary" style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>{t('screen1.charger_type_label')}</Text>
+                            <Text strong>{stationInfo.batteryModel}</Text>
                         </div>
+                        <ThunderboltOutlined style={{ color: '#10b981', fontSize: '22px' }} />
                     </div>
 
-                    <div style={{ textAlign: 'center' }}>
-                        <Title level={3} style={{ color: '#111827', margin: '0 0 8px 0', fontWeight: 700 }}>
-                            {t('screen2.title')}
-                            <div style={{ fontSize: '14px', color: '#6B7280', fontWeight: 500, marginTop: '4px' }}>
-                                ({mode === 'reset' ? t('screen1.otp_mode_reset') : t('screen1.otp_mode_register')})
-                            </div>
-                        </Title>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                        <SlotStat label={t('screen1.slot_full')} value={stationInfo.fullBatteries} color="#10b981" />
+                        <SlotStat label={t('screen1.slot_empty')} value={stationInfo.emptySlots} color="#64748b" />
+                        <SlotStat label={t('screen1.slot_fault')} value={stationInfo.faultSlots} color="#f59e0b" />
                     </div>
 
-                    <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                        <Text type="secondary" style={{ display: 'block' }}>{t('screen2.desc')}</Text>
-                        <Space align="center" style={{ marginTop: '4px' }}>
-                            <Text strong style={{ fontSize: '18px', color: '#EF4444' }}>{formatPhone(phone)}</Text>
-                            <Button
-                                type="text"
-                                icon={<EditOutlined />}
-                                size="small"
-                                onClick={editPhone}
-                                style={{ color: '#6B7280', display: 'flex', alignItems: 'center' }}
-                            >
-                                {t('common.edit')}
-                            </Button>
-                        </Space>
-                    </div>
-
-                    <div style={{ marginBottom: '40px', width: '100%', display: 'flex', justifyContent: 'center' }}>
-                        <OTPInput
-                            length={6}
-                            value={otp}
-                            onChange={(val) => {
-                                setOtp(val);
-                                if (val.length === 6) {
-                                    handleVerify();
-                                }
-                            }}
-                        />
-                    </div>
-
-                    {error && (
-                        <div style={{
-                            textAlign: 'center',
-                            color: '#EF4444',
-                            fontSize: '14px',
-                            marginTop: '-24px',
-                            marginBottom: '24px',
-                            fontWeight: '500'
-                        }}>
-                            {error}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', padding: '14px', borderRadius: '16px' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <DollarCircleOutlined style={{ color: '#10b981' }} />
+                            <Text strong>{t('screen1.price_label')}</Text>
                         </div>
-                    )}
-
-                    <div style={{ textAlign: 'center', width: '100%' }}>
-                        <Divider style={{ margin: '0 0 24px 0' }} />
-                        <Text type="secondary" style={{ fontSize: '14px' }}>{t('screen2.resend_desc')}</Text>
-                        <div style={{ marginTop: '8px' }}>
-                            {countdown > 0 ? (
-                                <Text style={{ color: '#9CA3AF' }}>{t('screen2.countdown', { seconds: countdown })}</Text>
-                            ) : (
-                                <Button
-                                    type="link"
-                                    onClick={handleResend}
-                                    style={{
-                                        color: '#EF4444',
-                                        fontWeight: 600,
-                                        padding: 0,
-                                        height: 'auto'
-                                    }}
-                                >
-                                    {t('screen2.resend_button')}
-                                </Button>
-                            )}
-                        </div>
+                        <Text strong style={{ fontSize: '18px', color: '#10b981' }}>{stationInfo.price} {t('charging.unit_baht')}/{t('charging.unit_swap')}</Text>
                     </div>
-                </div>
+                </Card>
 
-                {/* Footer Action Button */}
-                <div style={{ marginTop: 'auto', paddingBottom: '24px' }}>
+                <div style={{ marginTop: 'auto', paddingTop: '24px' }}>
                     <Button
                         type="primary"
                         size="large"
                         block
-                        loading={isLoading}
-                        disabled={otp.length !== 6}
-                        onClick={handleVerify}
-                        style={{
-                            height: '60px',
-                            borderRadius: '20px',
-                            backgroundColor: otp.length !== 6 ? '#E5E7EB' : '#EF4444',
-                            borderColor: otp.length !== 6 ? '#E5E7EB' : '#EF4444',
-                            color: otp.length !== 6 ? '#9CA3AF' : '#FFFFFF',
-                            fontSize: '18px',
-                            fontWeight: 700,
-                            boxShadow: otp.length !== 6 ? 'none' : '0 12px 20px rgba(239, 68, 68, 0.25)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
+                        disabled={stationInfo.status !== 'READY'}
+                        onClick={() => {
+                            if (isLoggedIn) {
+                                navigate('/screen4');
+                            } else {
+                                goToAuth();
+                            }
                         }}
+                        style={{ height: '60px', borderRadius: '20px', background: '#10b981', border: 'none', fontSize: '18px', fontWeight: 800 }}
                     >
-                        {t('screen2.verify_button')}
+                        {isLoggedIn ? t('common.next') : `${t('screen1.login_button')} / ${t('screen1.otp_mode')}`}
                     </Button>
                 </div>
-
-                {/* Password Setting Modal */}
-                <Modal
-                    title={<Title level={4} style={{ margin: 0 }}>{t('screen2.set_password_title')}</Title>}
-                    open={isPasswordModalOpen}
-                    onOk={handleSavePassword}
-                    okText={t('common.save')}
-                    cancelText={t('common.cancel')}
-                    closeIcon={false}
-                    maskClosable={false}
-                    centered
-                    okButtonProps={{
-                        style: {
-                            height: '45px',
-                            borderRadius: '12px',
-                            background: '#EF4444',
-                            borderColor: '#EF4444',
-                            fontWeight: 600
-                        }
-                    }}
-                    cancelButtonProps={{ style: { display: 'none' } }}
-                >
-                    <div style={{ padding: '10px 0' }}>
-                        <Text type="secondary" style={{ display: 'block', marginBottom: '8px' }}>
-                            {t('screen2.set_password_desc')}
-                        </Text>
-                        <Text type="secondary" style={{ display: 'block', marginBottom: '20px', fontSize: '13px', color: '#6B7280' }}>
-                            <span style={{ color: '#EF4444', marginRight: '4px' }}>*</span>
-                            {t('screen2.password_complexity')}
-                        </Text>
-
-                        <Space direction="vertical" style={{ width: '100%' }} size={16}>
-                            <div>
-                                <Text strong style={{ display: 'block', marginBottom: '8px' }}>{t('screen2.new_password')}</Text>
-                                <Input.Password
-                                    size="large"
-                                    placeholder={t('screen2.new_password')}
-                                    value={newPassword}
-                                    onChange={(e) => {
-                                        setNewPassword(e.target.value);
-                                        setPasswordError('');
-                                    }}
-                                    style={{ borderRadius: '12px' }}
-                                />
-                            </div>
-
-                            <div>
-                                <Text strong style={{ display: 'block', marginBottom: '8px' }}>{t('screen2.confirm_password')}</Text>
-                                <Input.Password
-                                    size="large"
-                                    placeholder={t('screen2.confirm_password')}
-                                    value={confirmPassword}
-                                    onChange={(e) => {
-                                        setConfirmPassword(e.target.value);
-                                        setPasswordError('');
-                                    }}
-                                    style={{ borderRadius: '12px' }}
-                                />
-                            </div>
-
-                            {passwordError && (
-                                <Text type="danger" style={{ fontSize: '13px', fontWeight: 500 }}>
-                                    {passwordError}
-                                </Text>
-                            )}
-                        </Space>
-                    </div>
-                </Modal>
-
             </div>
         </MobileLayout>
     );

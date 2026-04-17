@@ -17,10 +17,14 @@ export const useAuth = () => {
         const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
         const hasActiveSwap = localStorage.getItem('activeSwapSession') === 'true'
             || localStorage.getItem('isCharging') === 'true';
-        const publicScreens = ['/screen1', '/screen2', '/'];
+        const publicScreens = ['/screen1', '/screen3', '/'];
 
         if (isLoggedIn && publicScreens.includes(location.pathname)) {
-            navigate(hasActiveSwap ? '/screen5' : '/screen3', { replace: true });
+            const cabinetId = localStorage.getItem('currentCabinetId') || localStorage.getItem('currentChargerId');
+            const nextPath = hasActiveSwap
+                ? '/screen6'
+                : cabinetId ? `/screen2?cabinetId=${cabinetId}` : '/screen2';
+            navigate(nextPath, { replace: true });
         }
     }, [navigate, location.pathname]);
 
@@ -48,8 +52,8 @@ export const useAuth = () => {
         setIsLoading(true);
         try {
             await authService.login(phone);
-            if (location.pathname !== '/screen2') {
-                navigate('/screen2');
+            if (location.pathname !== '/screen3') {
+                navigate('/screen3');
             }
         } catch {
             Modal.error({ title: t('common.error'), content: t('auth.error_generic'), centered: true });
@@ -104,7 +108,7 @@ export const useAuth = () => {
             return;
         }
         localStorage.setItem('userPhone', phone);
-        navigate('/screen2');
+        navigate('/screen3');
     };
 
     const editPhone = () => {

@@ -1,267 +1,215 @@
 import React, { useState } from 'react';
-import { Button, Typography, Card, Space, Divider, Modal, Upload, Spin, message } from 'antd';
+import { Button, Typography, Row, Col, Card, Space, Divider, Badge } from 'antd';
 import {
-    DownloadOutlined,
-    WarningFilled,
-    UploadOutlined,
-    LoadingOutlined
+    ThunderboltFilled,
+    EnvironmentFilled,
+    CheckCircleFilled,
+    ClockCircleFilled,
+    CreditCardFilled,
+    WalletOutlined
 } from '@ant-design/icons';
 import MobileLayout from '../components/MobileLayout';
 import Header from '../components/Header';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-
-import qrImage from '../assets/thai_promptpay_qr_mockup.png';
 
 const { Title, Text } = Typography;
 
-const Screen4 = () => {
+const Screen3 = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const location = useLocation();
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [uploading, setUploading] = useState(false);
-
-    // Mock price from state or default to one battery swap.
-    const amountToPay = location.state?.price || 45.00;
-    const hours = location.state?.hours || 1;
-
-    const handleDownloadQR = () => {
-        const link = document.createElement('a');
-        link.href = qrImage;
-        link.download = `AMR_Swap_Payment_QR_${amountToPay.toFixed(2)}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        message.success(t('payment.save_image_success'));
-    };
+    const [selectedHour, setSelectedHour] = useState(null);
 
     React.useEffect(() => {
+        document.title = `${t('screen3.title')} | AMR Battery Swap`;
         const hasActiveSwap = localStorage.getItem('activeSwapSession') === 'true'
             || localStorage.getItem('isCharging') === 'true';
         if (hasActiveSwap) {
-            navigate('/screen5');
+            navigate('/screen6');
         }
-    }, [navigate]);
+    }, [navigate, t]);
 
-    const handleUploadSlip = () => {
-        setIsModalOpen(false);
-        setUploading(true);
-
-        // Mocking slip verification process
-        setTimeout(() => {
-            setUploading(false);
-
-            // Randomly simulate success (80%) or failure (20%) for demo purposes
-            const isSuccess = Math.random() > 0.2;
-
-            if (isSuccess) {
-                message.success(t('payment.success_slip'));
-                localStorage.setItem('activeSwapSession', 'true');
-                navigate('/screen5');
-            } else {
-                Modal.error({
-                    title: t('payment.failed_slip_title'),
-                    content: (
-                        <div>
-                            <p>{t('payment.failed_slip_desc')}</p>
-                            <Text type="secondary" style={{ fontSize: '12px' }}>{t('payment.failed_slip_reason')}</Text>
-                        </div>
-                    ),
-                    okText: t('common.retry'),
-                    centered: true,
-                    borderRadius: 16
-                });
+    const handlePayment = () => {
+        if (!selectedHour || !selectedOption) return;
+        navigate('/screen5', {
+            state: {
+                price: selectedOption.price,
+                hours: selectedOption.value,
+                packageLabel: selectedOption.label
             }
-        }, 5000);
+        });
     };
 
-    const uploadProps = {
-        beforeUpload: (file) => {
-            const isImage = file.type.startsWith('image/');
-            if (!isImage) {
-                message.error(t('payment.support_images_only'));
-                return Upload.LIST_IGNORE;
-            }
-            return true;
-        },
-        customRequest: ({ onSuccess }) => {
-            setTimeout(() => {
-                onSuccess("ok");
-                handleUploadSlip();
-            }, 500);
-        },
-        showUploadList: false,
-    };
+    const hourOptions = [
+        { label: `1 ${t('charging.unit_swap')}`, value: 1, price: 45 },
+        { label: `3 ${t('charging.unit_swap')}`, value: 3, price: 129 },
+        { label: `7 ${t('charging.unit_swap')}`, value: 7, price: 280 },
+        { label: `30 ${t('charging.unit_swap')}`, value: 30, price: 990 },
+    ];
+
+    const selectedOption = hourOptions.find(opt => opt.value === selectedHour);
 
     return (
         <MobileLayout>
-            {/* Full Screen Loading Overlay */}
-            {uploading && (
-                <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    zIndex: 2000,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: '20px'
-                }}>
-                    <Spin indicator={<LoadingOutlined style={{ fontSize: 48, color: '#EF4444' }} spin />} />
-                    <div style={{ textAlign: 'center' }}>
-                        <Text strong style={{ fontSize: '18px', display: 'block', color: '#1f2937' }}>
-                            {t('payment.verifying_slip')}
-                        </Text>
-                        <Text type="secondary">{t('payment.dont_close_page')}</Text>
-                    </div>
-                </div>
-            )}
-
-            <Header title={t('payment.title')} showBack={true} />
+            <Header title={t('screen3.title')} />
 
             <div style={{ padding: '0 20px 24px 20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
 
-                {/* Payment Amount Card */}
-                <div style={{ textAlign: 'center', margin: '10px 0 24px 0' }}>
-                    <Text type="secondary" style={{ fontSize: '14px' }}>{t('payment.amount_to_pay')}</Text>
-                    <Title level={1} style={{ margin: '4px 0', color: '#1f2937', fontSize: '36px' }}>
-                        <span style={{ fontSize: '24px', marginRight: '4px', fontWeight: 400 }}>฿</span>
-                        {amountToPay.toFixed(2)}
-                    </Title>
-                    <div style={{
-                        display: 'inline-block',
-                        padding: '4px 12px',
-                        backgroundColor: '#f1f5f9',
-                        borderRadius: '20px'
-                    }}>
-                        <Text style={{ fontSize: '12px', color: '#64748b' }}>{t('payment.charging_duration', { hours })}</Text>
-                    </div>
-                </div>
-
-                {/* QR Code Card */}
+                {/* Detailed Station Info Card */}
                 <Card
                     style={{
-                        borderRadius: '24px',
-                        border: '1px solid #e2e8f0',
-                        boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)',
+                        borderRadius: '20px',
+                        border: '1px solid #f1f5f9',
                         marginBottom: '24px',
-                        overflow: 'hidden'
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
                     }}
-                    styles={{ body: { padding: '32px 24px' } }}
+                    styles={{ body: { padding: '20px' } }}
                 >
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-                        <div style={{
-                            padding: '12px',
-                            backgroundColor: '#fff',
-                            borderRadius: '16px',
-                            border: '1px solid #f8fafc'
-                        }}>
-                            <img
-                                src={qrImage}
-                                alt="Payment QR Code"
-                                style={{ width: '220px', height: '220px', display: 'block' }}
-                            />
+                    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                            <div style={{
+                                padding: '10px',
+                                backgroundColor: '#ecfdf5',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>
+                                <EnvironmentFilled style={{ color: '#EF4444', fontSize: '20px' }} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <Title level={5} style={{ margin: '0 0 4px 0', fontSize: '18px' }}>{t('mock_station.name')}</Title>
+                                <Text type="secondary" style={{ fontSize: '13px', lineHeight: '1.4', display: 'block' }}>
+                                    {t('mock_station.address')}
+                                </Text>
+                            </div>
                         </div>
 
-                        <Space direction="vertical" align="center" size={4}>
-                            <Text strong style={{ fontSize: '16px' }}>{t('payment.scan_banking_title') || 'Scan with Banking App'}</Text>
-                            <Text type="secondary" style={{ fontSize: '13px' }}>{t('payment.scan_banking')}</Text>
-                        </Space>
+                        <Divider style={{ margin: '0' }} />
 
-                        <Button
-                            icon={<DownloadOutlined />}
-                            onClick={handleDownloadQR}
-                            style={{
-                                borderRadius: '20px',
-                                color: '#10b981',
-                                borderColor: '#10b981'
-                            }}
-                        >
-                            {t('payment.save_image')}
-                        </Button>
-                    </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <div>
+                                <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '2px' }}>{t('screen6.charger_id')}</Text>
+                                <Text strong style={{ fontSize: '14px', wordBreak: 'break-word', display: 'block', lineHeight: '1.4' }}>
+                                    {t('mock_station.charger_id')}
+                                </Text>
+                            </div>
+
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>{t('screen6.connector_no')}</Text>
+                                    <Text strong style={{ fontSize: '14px' }}>ช่อง 04</Text>
+                                </Col>
+                                <Col span={12}>
+                                    <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>{t('screen6.connector_type')}</Text>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <ThunderboltFilled style={{ color: '#10b981', fontSize: '14px' }} />
+                                        <Text strong style={{ fontSize: '14px' }}>AMR-M2 72V</Text>
+                                    </div>
+                                </Col>
+                            </Row>
+                        </div>
+                    </Space>
                 </Card>
 
-                {/* Footer Actions */}
-                <div style={{ marginTop: 'auto' }}>
+                {/* Selection Section */}
+                <div style={{ marginBottom: '16px' }}>
+                    <Text strong style={{ fontSize: '16px', color: '#1f2937' }}>{t('screen3.title')}</Text>
+                </div>
+
+                <Row gutter={[12, 12]} style={{ marginBottom: '24px' }}>
+                    {hourOptions.map(option => (
+                        <Col span={12} key={option.value}>
+                            <div
+                                onClick={() => setSelectedHour(option.value)}
+                                style={{
+                                    cursor: 'pointer',
+                                    padding: '16px',
+                                    borderRadius: '16px',
+                                    border: `2px solid ${selectedHour === option.value ? '#EF4444' : '#f3f4f6'}`,
+                                    backgroundColor: selectedHour === option.value ? '#fff' : '#fff',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    transition: 'all 0.3s ease',
+                                    position: 'relative',
+                                    boxShadow: selectedHour === option.value ? '0 8px 20px rgba(239, 68, 68, 0.15)' : 'none',
+                                    transform: selectedHour === option.value ? 'translateY(-2px)' : 'none'
+                                }}
+                            >
+                                {selectedHour === option.value && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '-10px',
+                                        right: '-10px',
+                                        backgroundColor: '#EF4444',
+                                        borderRadius: '50%',
+                                        width: '24px',
+                                        height: '24px',
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        border: '3px solid #fff',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                    }}>
+                                        <CheckCircleFilled style={{ color: '#fff', fontSize: '14px' }} />
+                                    </div>
+                                )}
+                                <ClockCircleFilled style={{
+                                    fontSize: '28px',
+                                    color: selectedHour === option.value ? '#EF4444' : '#d1d5db',
+                                    marginBottom: '4px'
+                                }} />
+                                <Text strong style={{
+                                    fontSize: '18px',
+                                    color: selectedHour === option.value ? '#EF4444' : '#1f2937'
+                                }}>
+                                    {option.label}
+                                </Text>
+                                <Text style={{
+                                    fontSize: '13px',
+                                    color: selectedHour === option.value ? '#EF4444' : '#6b7280'
+                                }}>
+                                    ฿{option.price}
+                                </Text>
+                            </div>
+                        </Col>
+                    ))}
+                </Row>
+
+
+
+                {/* Footer Action */}
+                <div>
                     <Button
                         type="primary"
                         size="large"
                         block
-                        icon={<UploadOutlined />}
+                        disabled={!selectedHour}
                         style={{
-                            height: '56px',
-                            borderRadius: '28px',
-                            backgroundColor: '#1f2937',
+                            height: '60px',
+                            borderRadius: '30px',
+                            backgroundColor: selectedHour ? '#EF4444' : '#d1d5db',
                             border: 'none',
-                            fontSize: '16px',
+                            fontSize: '18px',
                             fontWeight: 'bold',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '10px',
-                            marginBottom: '12px'
+                            gap: '12px',
+                            boxShadow: selectedHour ? '0 10px 15px -3px rgba(239, 68, 68, 0.4)' : 'none'
                         }}
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={handlePayment}
                     >
-                        {t('payment.attach_slip')}
-                    </Button>
-                    <Button
-                        type="text"
-                        block
-                        style={{ color: '#6b7280' }}
-                        onClick={() => {
-                            Modal.confirm({
-                                title: t('payment.cancel_confirm_title'),
-                                content: t('payment.cancel_confirm_desc'),
-                                okText: t('common.ok'),
-                                cancelText: t('common.cancel'),
-                                centered: true,
-                                onOk: () => navigate('/screen3'),
-                                okButtonProps: {
-                                    danger: true,
-                                    style: { borderRadius: '8px' }
-                                },
-                                cancelButtonProps: {
-                                    style: { borderRadius: '8px' }
-                                }
-                            });
-                        }}
-                    >
-                        {t('payment.cancel_payment')}
+                        {selectedHour && <ThunderboltFilled />}
+                        {t('screen3.start_charging')}
                     </Button>
                 </div>
 
             </div>
-
-            {/* Upload Modal */}
-            <Modal
-                title={t('payment.select_slip')}
-                open={isModalOpen}
-                onCancel={() => setIsModalOpen(false)}
-                footer={null}
-                centered
-                styles={{ body: { padding: '24px' } }}
-            >
-                <Upload.Dragger {...uploadProps} accept="image/*">
-                    <p className="ant-upload-drag-icon" style={{ marginBottom: '16px' }}>
-                        <UploadOutlined style={{ fontSize: '48px', color: '#10b981' }} />
-                    </p>
-                    <p className="ant-upload-text" style={{ fontSize: '16px', fontWeight: 600 }}>
-                        {t('payment.click_or_drag')}
-                    </p>
-                    <p className="ant-upload-hint" style={{ color: '#6b7280' }}>
-                        {t('payment.support_images_only')}
-                    </p>
-                </Upload.Dragger>
-            </Modal>
         </MobileLayout>
     );
 };
 
-export default Screen4;
+export default Screen3;

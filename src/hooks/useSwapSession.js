@@ -26,7 +26,7 @@ export const useSwapSession = () => {
     const completeSwap = async () => {
         try {
             await swapService.completeSwap();
-            navigate('/screen6');
+            navigate('/screen7');
         } catch (error) {
             console.error('Failed to complete swap', error);
         }

@@ -88,11 +88,11 @@ const Header = ({ title, showMenu = true }) => {
                     justifyContent: 'flex-start',
                     paddingLeft: '12px',
                     height: '40px',
-                    backgroundColor: location.pathname === '/screen7' || location.pathname === '/screen8' ? '#fee2e2' : 'transparent',
-                    color: location.pathname === '/screen7' || location.pathname === '/screen8' ? '#EF4444' : 'rgba(0, 0, 0, 0.85)',
-                    fontWeight: location.pathname === '/screen7' || location.pathname === '/screen8' ? '600' : 'normal'
+                    backgroundColor: location.pathname === '/screen8' || location.pathname === '/screen9' ? '#fee2e2' : 'transparent',
+                    color: location.pathname === '/screen8' || location.pathname === '/screen9' ? '#EF4444' : 'rgba(0, 0, 0, 0.85)',
+                    fontWeight: location.pathname === '/screen8' || location.pathname === '/screen9' ? '600' : 'normal'
                 }}
-                onClick={() => handleNavigate('/screen7')}
+                onClick={() => handleNavigate('/screen8')}
             >
                 {t('common.history')}
             </Button>
@@ -104,11 +104,11 @@ const Header = ({ title, showMenu = true }) => {
                     justifyContent: 'flex-start',
                     paddingLeft: '12px',
                     height: '40px',
-                    backgroundColor: location.pathname === '/screen5' ? '#fee2e2' : 'transparent',
-                    color: location.pathname === '/screen5' ? '#EF4444' : 'rgba(0, 0, 0, 0.85)',
-                    fontWeight: location.pathname === '/screen5' ? '600' : 'normal'
+                    backgroundColor: location.pathname === '/screen6' ? '#fee2e2' : 'transparent',
+                    color: location.pathname === '/screen6' ? '#EF4444' : 'rgba(0, 0, 0, 0.85)',
+                    fontWeight: location.pathname === '/screen6' ? '600' : 'normal'
                 }}
-                onClick={() => handleNavigate('/screen5')}
+                onClick={() => handleNavigate('/screen6')}
             >
                 {t('common.charging')}
             </Button>

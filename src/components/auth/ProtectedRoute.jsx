@@ -6,11 +6,9 @@ const ProtectedRoute = ({ children }) => {
     const location = useLocation();
 
     if (!isLoggedIn) {
-        // Redirect them to the /screen1 page, but save the current location they were
-        // trying to go to when they were redirected. This allows us to send them
-        // along to that page after they login, which is a nicer user experience
-        // than dropping them off on the home page.
-        return <Navigate to="/screen1" state={{ from: location }} replace />;
+        const cabinetId = localStorage.getItem('currentCabinetId') || localStorage.getItem('currentChargerId');
+        const loginPath = cabinetId ? `/screen1?cabinetId=${cabinetId}` : '/screen1';
+        return <Navigate to={loginPath} state={{ from: location }} replace />;
     }
 
     return children;

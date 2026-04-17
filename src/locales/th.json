@@ -42,7 +42,7 @@
     "screen1": {
         "login_options": "ตัวเลือกการเข้าใช้งาน",
         "otp_mode": "สมัครสมาชิก",
-        "password_mode": "เข้าด้วยรหัสผ่าน",
+        "password_mode": "เข้าสู่ระบบ",
         "phone_placeholder": "กรอกเบอร์โทรศัพท์",
         "password_placeholder": "กรอกรหัสผ่านของคุณ",
         "login_button": "เข้าสู่ระบบ",

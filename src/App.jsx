@@ -8,6 +8,7 @@ import Screen6 from './pages/Screen6';
 import Screen7 from './pages/Screen7';
 import Screen8 from './pages/Screen8';
 import Screen9 from './pages/Screen9';
+import Screen10 from './pages/Screen10';
 import Screen3 from './pages/Screen3';
 import NotFound from './pages/NotFound';
 import MobileMiddleware from './components/MobileMiddleware';
@@ -23,15 +24,16 @@ function App() {
         <Route path="/screen1" element={<Screen1 />} />
 
 
-        {/* Mobile-only Protected Routes */}
+        {/* Mobile flow */}
         <Route path="/screen2" element={<MobileMiddleware><Screen2 /></MobileMiddleware>} />
+        <Route path="/screen3" element={<MobileMiddleware><Screen3 /></MobileMiddleware>} />
         <Route path="/screen4" element={<MobileMiddleware><ProtectedRoute><Screen4 /></ProtectedRoute></MobileMiddleware>} />
         <Route path="/screen5" element={<MobileMiddleware><ProtectedRoute><Screen5 /></ProtectedRoute></MobileMiddleware>} />
         <Route path="/screen6" element={<MobileMiddleware><ProtectedRoute><Screen6 /></ProtectedRoute></MobileMiddleware>} />
         <Route path="/screen7" element={<MobileMiddleware><ProtectedRoute><Screen7 /></ProtectedRoute></MobileMiddleware>} />
         <Route path="/screen8" element={<MobileMiddleware><ProtectedRoute><Screen8 /></ProtectedRoute></MobileMiddleware>} />
         <Route path="/screen9" element={<MobileMiddleware><ProtectedRoute><Screen9 /></ProtectedRoute></MobileMiddleware>} />
-        <Route path="/screen3" element={<MobileMiddleware><ProtectedRoute><Screen3 /></ProtectedRoute></MobileMiddleware>} />
+        <Route path="/screen10" element={<MobileMiddleware><ProtectedRoute><Screen10 /></ProtectedRoute></MobileMiddleware>} />
 
         {/* 404 Route */}
         <Route path="/404" element={<NotFound />} />

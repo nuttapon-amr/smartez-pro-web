@@ -1,271 +1,267 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Typography, Modal, Spin, Space, Divider, Card } from 'antd';
+import React, { useState } from 'react';
+import { Button, Typography, Card, Space, Divider, Modal, Upload, Spin, message } from 'antd';
 import {
-    CheckCircleFilled,
-    ClockCircleOutlined,
-    CustomerServiceFilled,
-    EnvironmentFilled,
-    InfoCircleFilled,
-    MessageOutlined,
-    PhoneOutlined,
-    ThunderboltFilled
+    DownloadOutlined,
+    WarningFilled,
+    UploadOutlined,
+    LoadingOutlined
 } from '@ant-design/icons';
 import MobileLayout from '../components/MobileLayout';
 import Header from '../components/Header';
-import { useNavigate } from 'react-router-dom';
-import useSwapSession from '../hooks/useSwapSession';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+
+import qrImage from '../assets/thai_promptpay_qr_mockup.png';
 
 const { Title, Text } = Typography;
 
-const MOCK_SWAP = {
-    swapId: 'SWP-2026-000142',
-    stationNameTh: 'AMR Swap Station Bang Na',
-    stationNameEn: 'AMR Swap Station Bang Na',
-    stationAddressTh: '123/45 ถนนบางนา-ตราด แขวงบางนา เขตบางนา กรุงเทพมหานคร 10260',
-    stationAddressEn: '123/45 Bang Na-Trat Road, Bang Na, Bangkok 10260',
-    cabinetCode: 'SWAP-BN-004',
-    batteryModel: 'AMR-M2 72V',
-    returnSlot: '02',
-    pickupSlot: '04',
-    returnedBatteryId: 'BAT-OLD-9182',
-    pickupBatteryId: 'BAT-FULL-2048',
-    pickupBatterySoc: 96,
-    fullBatteries: 8,
-    serviceTime: '00:02:40',
-    status: 'waiting_return'
-};
-
-const Screen5 = () => {
-    const { t, i18n } = useTranslation();
+const Screen4 = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
-    const { hasActiveSwap, isLoading, completeSwap } = useSwapSession();
-    const [swapStatus, setSwapStatus] = useState(MOCK_SWAP.status);
-    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-    const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-    const [isStationInfoVisible, setIsStationInfoVisible] = useState(false);
+    const location = useLocation();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [uploading, setUploading] = useState(false);
 
-    useEffect(() => {
-        document.title = `${t('screen5.title')} | AMR Battery Swap`;
-    }, [t]);
+    // Mock price from state or default to one battery swap.
+    const amountToPay = location.state?.price || 45.00;
+    const hours = location.state?.hours || 1;
 
-    const isWaitingReturn = swapStatus === 'waiting_return';
-    const handleReturnConfirmed = () => {
-        setSwapStatus('pickup_ready');
+    const handleDownloadQR = () => {
+        const link = document.createElement('a');
+        link.href = qrImage;
+        link.download = `AMR_Swap_Payment_QR_${amountToPay.toFixed(2)}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        message.success(t('payment.save_image_success'));
     };
 
-    const handlePickupConfirm = () => {
-        setIsConfirmModalOpen(false);
-        completeSwap();
-    };
+    React.useEffect(() => {
+        const hasActiveSwap = localStorage.getItem('activeSwapSession') === 'true'
+            || localStorage.getItem('isCharging') === 'true';
+        if (hasActiveSwap) {
+            navigate('/screen6');
+        }
+    }, [navigate]);
 
-    if (isLoading) {
-        return (
-            <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <Spin size="large" />
-            </div>
-        );
-    }
+    const handleUploadSlip = () => {
+        setIsModalOpen(false);
+        setUploading(true);
 
-    if (!hasActiveSwap) {
-        return (
-            <MobileLayout>
-                <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#f8fafc' }}>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
-                        <Button
-                            type="text"
-                            onClick={() => i18n.changeLanguage(i18n.language === 'th' ? 'en' : 'th')}
-                            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', borderRadius: '12px', padding: '4px 12px', height: 'auto', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
-                        >
-                            <span style={{ fontSize: '18px' }}>{i18n.language === 'th' ? '🇹🇭' : '🇬🇧'}</span>
-                            <Text strong style={{ fontSize: '13px', color: '#1f2937' }}>{i18n.language === 'th' ? 'TH' : 'EN'}</Text>
-                        </Button>
-                    </div>
+        // Mocking slip verification process
+        setTimeout(() => {
+            setUploading(false);
 
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-                        <div style={{ width: '80px', height: '80px', backgroundColor: '#ecfdf5', borderRadius: '26px', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '24px' }}>
-                            <ThunderboltFilled style={{ color: '#10b981', fontSize: '36px' }} />
+            // Randomly simulate success (80%) or failure (20%) for demo purposes
+            const isSuccess = Math.random() > 0.2;
+
+            if (isSuccess) {
+                message.success(t('payment.success_slip'));
+                localStorage.setItem('activeSwapSession', 'true');
+                navigate('/screen6');
+            } else {
+                Modal.error({
+                    title: t('payment.failed_slip_title'),
+                    content: (
+                        <div>
+                            <p>{t('payment.failed_slip_desc')}</p>
+                            <Text type="secondary" style={{ fontSize: '12px' }}>{t('payment.failed_slip_reason')}</Text>
                         </div>
-                        <Title level={4} style={{ margin: '0 0 12px 0', color: '#1e293b' }}>{t('screen5.no_charging_title')}</Title>
-                        <Text type="secondary" style={{ display: 'block', marginBottom: '32px' }}>{t('screen5.no_charging_desc')}</Text>
-                        <Button
-                            type="primary"
-                            size="large"
-                            icon={<ClockCircleOutlined />}
-                            onClick={() => navigate('/screen7')}
-                            style={{ height: '56px', borderRadius: '16px', backgroundColor: '#10b981', fontWeight: '700', padding: '0 32px', boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)' }}
-                        >
-                            {t('screen5.go_to_history')}
-                        </Button>
-                    </div>
-                </div>
-            </MobileLayout>
-        );
-    }
+                    ),
+                    okText: t('common.retry'),
+                    centered: true,
+                    borderRadius: 16
+                });
+            }
+        }, 5000);
+    };
 
-    const stationName = i18n.language === 'th' ? MOCK_SWAP.stationNameTh : MOCK_SWAP.stationNameEn;
-    const stationAddress = i18n.language === 'th' ? MOCK_SWAP.stationAddressTh : MOCK_SWAP.stationAddressEn;
-    const steps = [
-        { label: t('screen5.step_payment_done'), done: true },
-        { label: t('screen5.step_return_opened'), done: true },
-        { label: isWaitingReturn ? t('screen5.step_wait_return') : t('screen5.step_return_checked'), done: !isWaitingReturn, active: isWaitingReturn },
-        { label: t('screen5.step_pickup_opened'), done: !isWaitingReturn, active: !isWaitingReturn },
-        { label: t('screen5.step_pickup_confirm'), done: false }
-    ];
+    const uploadProps = {
+        beforeUpload: (file) => {
+            const isImage = file.type.startsWith('image/');
+            if (!isImage) {
+                message.error(t('payment.support_images_only'));
+                return Upload.LIST_IGNORE;
+            }
+            return true;
+        },
+        customRequest: ({ onSuccess }) => {
+            setTimeout(() => {
+                onSuccess("ok");
+                handleUploadSlip();
+            }, 500);
+        },
+        showUploadList: false,
+    };
 
     return (
         <MobileLayout>
-            <div style={{ background: '#f8fafc', minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
-                <Header title={t('screen5.title')} />
-
-                <div style={{ padding: '14px 20px 24px 20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
-                        <div style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            background: isWaitingReturn ? '#fff7ed' : '#ecfdf5',
-                            padding: '6px 12px',
-                            borderRadius: '20px',
-                            color: isWaitingReturn ? '#ea580c' : '#10b981',
-                            fontSize: '11px',
-                            fontWeight: '700',
-                            border: isWaitingReturn ? '1px solid #ffedd5' : '1px solid #bbf7d0'
-                        }}>
-                            <span style={{ width: '6px', height: '6px', background: isWaitingReturn ? '#ea580c' : '#10b981', borderRadius: '50%' }} />
-                            {isWaitingReturn ? t('screen5.status_suspended') : t('screen5.status_charging')}
-                        </div>
-
-                        <div style={{ display: 'inline-flex', alignItems: 'center', background: '#1e293b', padding: '6px 12px', borderRadius: '20px', color: 'white', fontSize: '11px', fontWeight: '700' }}>
-                            {MOCK_SWAP.batteryModel}
-                        </div>
-
-                        <Button
-                            type="text"
-                            icon={<InfoCircleFilled style={{ color: '#3b82f6', fontSize: '18px' }} />}
-                            onClick={() => setIsStationInfoVisible(true)}
-                            style={{ padding: '4px', height: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'white', borderRadius: '50%', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9' }}
-                        />
-                    </div>
-
-                    <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                        <div style={{ width: '180px', height: '180px', margin: '0 auto 18px auto', borderRadius: '40px', background: 'linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%)', border: '1px solid #d1fae5', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', boxShadow: '0 18px 40px rgba(16, 185, 129, 0.12)' }}>
-                            <ThunderboltFilled style={{ color: '#10b981', fontSize: '42px', marginBottom: '12px' }} />
-                            <Title level={1} style={{ margin: 0, color: '#0f172a', lineHeight: 1 }}>{MOCK_SWAP.pickupBatterySoc}<span style={{ fontSize: '22px' }}>%</span></Title>
-                            <Text type="secondary" style={{ fontSize: '12px', fontWeight: 700 }}>{t('screen5.energy_delivered')}</Text>
-                        </div>
-                        <Title level={4} style={{ margin: '0 0 6px 0', color: '#0f172a' }}>
-                            {isWaitingReturn
-                                ? t('screen5.return_slot_title', { slot: MOCK_SWAP.returnSlot })
-                                : t('screen5.pickup_slot_title', { slot: MOCK_SWAP.pickupSlot })}
-                        </Title>
-                        <Text type="secondary" style={{ fontSize: '13px' }}>
-                            {isWaitingReturn
-                                ? t('screen5.charger_stopped_check')
-                                : t('screen5.pickup_slot_desc', { slot: MOCK_SWAP.pickupSlot, batteryId: MOCK_SWAP.pickupBatteryId })}
+            {/* Full Screen Loading Overlay */}
+            {uploading && (
+                <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    zIndex: 2000,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '20px'
+                }}>
+                    <Spin indicator={<LoadingOutlined style={{ fontSize: 48, color: '#EF4444' }} spin />} />
+                    <div style={{ textAlign: 'center' }}>
+                        <Text strong style={{ fontSize: '18px', display: 'block', color: '#1f2937' }}>
+                            {t('payment.verifying_slip')}
                         </Text>
+                        <Text type="secondary">{t('payment.dont_close_page')}</Text>
                     </div>
+                </div>
+            )}
 
-                    <Card style={{ borderRadius: '22px', border: '1px solid #e2e8f0', marginBottom: '18px' }} styles={{ body: { padding: '18px' } }}>
-                        <Space direction="vertical" size={14} style={{ width: '100%' }}>
-                            {steps.map((step, index) => (
-                                <div key={step.label} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                    <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: step.done ? '#10b981' : step.active ? '#f59e0b' : '#e2e8f0', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '12px', fontWeight: 800 }}>
-                                        {step.done ? <CheckCircleFilled /> : index + 1}
-                                    </div>
-                                    <Text strong={step.active} style={{ fontSize: '14px', color: step.active ? '#0f172a' : '#64748b' }}>{step.label}</Text>
-                                </div>
-                            ))}
-                        </Space>
-                    </Card>
+            <Header title={t('payment.title')} showBack={true} />
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '18px' }}>
-                        <Stat label={t('screen5.current_power')} value={MOCK_SWAP.fullBatteries} unit={t('charging.unit_swap')} />
-                        <Stat label={t('screen5.elapsed_time')} value={MOCK_SWAP.serviceTime} />
-                    </div>
+            <div style={{ padding: '0 20px 24px 20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
 
-                    <div style={{ marginTop: 'auto', paddingTop: '18px' }}>
-                        {isWaitingReturn ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <Button type="primary" size="large" block icon={<CheckCircleFilled />} style={{ height: '60px', borderRadius: '18px', fontWeight: '800', fontSize: '16px', backgroundColor: '#10b981', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.25)' }} onClick={handleReturnConfirmed}>
-                                    {t('screen5.resume_confirm_title')}
-                                </Button>
-                                <Button size="large" block icon={<CustomerServiceFilled />} style={{ height: '56px', borderRadius: '18px', fontWeight: '700', fontSize: '16px', color: '#475569', borderColor: '#cbd5e1' }} onClick={() => setIsContactModalOpen(true)}>
-                                    {t('screen5.contact_support')}
-                                </Button>
-                            </div>
-                        ) : (
-                            <Button type="primary" size="large" block style={{ height: '64px', borderRadius: '20px', fontWeight: '800', fontSize: '18px', backgroundColor: '#10b981', border: 'none', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.25)' }} onClick={() => setIsConfirmModalOpen(true)}>
-                                {t('screen5.stop_button')}
-                            </Button>
-                        )}
+                {/* Payment Amount Card */}
+                <div style={{ textAlign: 'center', margin: '10px 0 24px 0' }}>
+                    <Text type="secondary" style={{ fontSize: '14px' }}>{t('payment.amount_to_pay')}</Text>
+                    <Title level={1} style={{ margin: '4px 0', color: '#1f2937', fontSize: '36px' }}>
+                        <span style={{ fontSize: '24px', marginRight: '4px', fontWeight: 400 }}>฿</span>
+                        {amountToPay.toFixed(2)}
+                    </Title>
+                    <div style={{
+                        display: 'inline-block',
+                        padding: '4px 12px',
+                        backgroundColor: '#f1f5f9',
+                        borderRadius: '20px'
+                    }}>
+                        <Text style={{ fontSize: '12px', color: '#64748b' }}>{t('payment.charging_duration', { hours })}</Text>
                     </div>
                 </div>
 
-                <Modal title={null} open={isConfirmModalOpen} onCancel={() => setIsConfirmModalOpen(false)} footer={null} centered width={340} styles={{ body: { padding: '32px 24px' } }}>
-                    <div style={{ textAlign: 'center' }}>
-                        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#ecfdf5', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0 auto 24px auto' }}>
-                            <CheckCircleFilled style={{ fontSize: '32px', color: '#10b981' }} />
+                {/* QR Code Card */}
+                <Card
+                    style={{
+                        borderRadius: '24px',
+                        border: '1px solid #e2e8f0',
+                        boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)',
+                        marginBottom: '24px',
+                        overflow: 'hidden'
+                    }}
+                    styles={{ body: { padding: '32px 24px' } }}
+                >
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                        <div style={{
+                            padding: '12px',
+                            backgroundColor: '#fff',
+                            borderRadius: '16px',
+                            border: '1px solid #f8fafc'
+                        }}>
+                            <img
+                                src={qrImage}
+                                alt="Payment QR Code"
+                                style={{ width: '220px', height: '220px', display: 'block' }}
+                            />
                         </div>
-                        <Title level={4} style={{ margin: '0 0 12px 0' }}>{t('screen5.stop_confirm_title')}</Title>
-                        <Text type="secondary" style={{ display: 'block', marginBottom: '32px', fontSize: '14px' }}>{t('screen5.stop_confirm_desc')}</Text>
-                        <Button type="primary" size="large" block style={{ height: '52px', borderRadius: '14px', fontWeight: '700', backgroundColor: '#10b981' }} onClick={handlePickupConfirm}>
-                            {t('common.confirm')}
+
+                        <Space direction="vertical" align="center" size={4}>
+                            <Text strong style={{ fontSize: '16px' }}>{t('payment.scan_banking_title') || 'Scan with Banking App'}</Text>
+                            <Text type="secondary" style={{ fontSize: '13px' }}>{t('payment.scan_banking')}</Text>
+                        </Space>
+
+                        <Button
+                            icon={<DownloadOutlined />}
+                            onClick={handleDownloadQR}
+                            style={{
+                                borderRadius: '20px',
+                                color: '#10b981',
+                                borderColor: '#10b981'
+                            }}
+                        >
+                            {t('payment.save_image')}
                         </Button>
                     </div>
-                </Modal>
+                </Card>
 
-                <Modal title={<Title level={4} style={{ margin: 0, textAlign: 'center' }}>{t('screen5.contact_support')}</Title>} open={isContactModalOpen} onCancel={() => setIsContactModalOpen(false)} footer={null} centered width={320} styles={{ body: { padding: '24px' } }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '10px' }}>
-                        <a href="tel:021234567" style={{ textDecoration: 'none' }}>
-                            <Button block size="large" style={{ height: '60px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '20px', paddingRight: '20px', fontSize: '16px', fontWeight: '600' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><PhoneOutlined style={{ fontSize: '20px', color: '#10b981' }} /><span>02-123-4567</span></div>
-                                <div style={{ background: '#f3f4f6', padding: '4px 8px', borderRadius: '8px', fontSize: '12px', color: '#6b7280' }}>Call</div>
-                            </Button>
-                        </a>
-                        <a href="https://line.me/ti/p/@amr_ev" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                            <Button block size="large" style={{ height: '60px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '20px', paddingRight: '20px', fontSize: '16px', fontWeight: '600', borderColor: '#06c755', color: '#06c755' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><MessageOutlined style={{ fontSize: '20px' }} /><span>@amr_swap</span></div>
-                                <div style={{ background: '#dcfce7', padding: '4px 8px', borderRadius: '8px', fontSize: '12px', color: '#15803d' }}>Line</div>
-                            </Button>
-                        </a>
-                    </div>
-                </Modal>
+                {/* Footer Actions */}
+                <div style={{ marginTop: 'auto' }}>
+                    <Button
+                        type="primary"
+                        size="large"
+                        block
+                        icon={<UploadOutlined />}
+                        style={{
+                            height: '56px',
+                            borderRadius: '28px',
+                            backgroundColor: '#1f2937',
+                            border: 'none',
+                            fontSize: '16px',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px',
+                            marginBottom: '12px'
+                        }}
+                        onClick={() => setIsModalOpen(true)}
+                    >
+                        {t('payment.attach_slip')}
+                    </Button>
+                    <Button
+                        type="text"
+                        block
+                        style={{ color: '#6b7280' }}
+                        onClick={() => {
+                            Modal.confirm({
+                                title: t('payment.cancel_confirm_title'),
+                                content: t('payment.cancel_confirm_desc'),
+                                okText: t('common.ok'),
+                                cancelText: t('common.cancel'),
+                                centered: true,
+                                onOk: () => navigate('/screen4'),
+                                okButtonProps: {
+                                    danger: true,
+                                    style: { borderRadius: '8px' }
+                                },
+                                cancelButtonProps: {
+                                    style: { borderRadius: '8px' }
+                                }
+                            });
+                        }}
+                    >
+                        {t('payment.cancel_payment')}
+                    </Button>
+                </div>
 
-                <Modal title={<Title level={4} style={{ margin: 0 }}>{t('screen1.station_label')}</Title>} open={isStationInfoVisible} onCancel={() => setIsStationInfoVisible(false)} footer={<Button type="primary" onClick={() => setIsStationInfoVisible(false)} style={{ borderRadius: '12px', background: '#10b981', borderColor: '#10b981' }}>{t('common.close')}</Button>} centered styles={{ body: { padding: '24px' } }}>
-                    <Space direction="vertical" size={18} style={{ width: '100%' }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-                            <div style={{ padding: '10px', backgroundColor: '#ecfdf5', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <EnvironmentFilled style={{ color: '#10b981', fontSize: '20px' }} />
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <Title level={5} style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 700 }}>{stationName}</Title>
-                                <Text type="secondary" style={{ fontSize: '14px', lineHeight: '1.5', display: 'block' }}>{stationAddress}</Text>
-                            </div>
-                        </div>
-                        <Divider style={{ margin: 0 }} />
-                        <InfoRow label={t('screen6.charger_id')} value={MOCK_SWAP.cabinetCode} />
-                        <InfoRow label={t('screen6.connector_type')} value={MOCK_SWAP.batteryModel} />
-                        <InfoRow label={t('screen5.return_pickup_label')} value={`${MOCK_SWAP.returnSlot} / ${MOCK_SWAP.pickupSlot}`} />
-                    </Space>
-                </Modal>
             </div>
+
+            {/* Upload Modal */}
+            <Modal
+                title={t('payment.select_slip')}
+                open={isModalOpen}
+                onCancel={() => setIsModalOpen(false)}
+                footer={null}
+                centered
+                styles={{ body: { padding: '24px' } }}
+            >
+                <Upload.Dragger {...uploadProps} accept="image/*">
+                    <p className="ant-upload-drag-icon" style={{ marginBottom: '16px' }}>
+                        <UploadOutlined style={{ fontSize: '48px', color: '#10b981' }} />
+                    </p>
+                    <p className="ant-upload-text" style={{ fontSize: '16px', fontWeight: 600 }}>
+                        {t('payment.click_or_drag')}
+                    </p>
+                    <p className="ant-upload-hint" style={{ color: '#6b7280' }}>
+                        {t('payment.support_images_only')}
+                    </p>
+                </Upload.Dragger>
+            </Modal>
         </MobileLayout>
     );
 };
 
-const Stat = ({ label, value, unit }) => (
-    <div style={{ background: 'white', padding: '16px', borderRadius: '18px', border: '1px solid #f1f5f9' }}>
-        <Text type="secondary" style={{ fontSize: '11px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>{label}</Text>
-        <Text strong style={{ fontSize: '20px', color: '#0f172a' }}>{value} {unit && <span style={{ fontSize: '12px', color: '#94a3b8' }}>{unit}</span>}</Text>
-    </div>
-);
-
-const InfoRow = ({ label, value }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-        <Text type="secondary" style={{ fontSize: '13px' }}>{label}</Text>
-        <Text strong style={{ fontSize: '14px', textAlign: 'right' }}>{value}</Text>
-    </div>
-);
-
-export default Screen5;
+export default Screen4;
