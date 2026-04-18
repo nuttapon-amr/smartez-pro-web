@@ -95,7 +95,7 @@ const Screen2 = () => {
 
         // Success: save password (mock) and proceed
         localStorage.setItem('isLoggedIn', 'true');
-        localStorage.removeItem('userPhone');
+        localStorage.setItem('lastLoginPhone', phone);
 
         const target = getPostAuthTarget();
         navigate(target.path, { replace: true, state: target.state });

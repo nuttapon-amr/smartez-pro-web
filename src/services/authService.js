@@ -32,6 +32,7 @@ const authService = {
     logout: async () => {
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('userPhone');
+        localStorage.removeItem('lastLoginPhone');
         localStorage.removeItem('activeSwapSession');
         localStorage.removeItem('isCharging');
         localStorage.removeItem('currentCabinetId');

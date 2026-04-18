@@ -57,6 +57,7 @@ const Screen1 = () => {
 
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('userPhone', phone);
+        localStorage.setItem('lastLoginPhone', phone);
         if (cabinetId) localStorage.setItem('currentCabinetId', cabinetId);
 
         const target = getPostAuthTarget();

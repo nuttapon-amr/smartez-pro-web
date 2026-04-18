@@ -155,6 +155,7 @@ const Screen2 = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                         {[
                             ['none', t('billing.profile_none')],
+                            ['quota', t('billing.profile_quota')],
                             ['daily', t('billing.profile_daily')],
                             ['monthly', t('billing.profile_monthly')]
                         ].map(([profile, label]) => (

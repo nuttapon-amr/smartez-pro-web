@@ -161,12 +161,48 @@ export const USER_ENTITLEMENTS = {
     }
 };
 
+export const MOCK_PHONE_ENTITLEMENT_PROFILES = {
+    '0811111111': 'monthly',
+    '0822222222': 'quota',
+    '0833333333': 'none'
+};
+
+export const MOCK_PHONE_EXAMPLES = [
+    {
+        phone: '0811111111',
+        profile: 'monthly',
+        labelKey: 'billing.example_pass_user'
+    },
+    {
+        phone: '0822222222',
+        profile: 'quota',
+        labelKey: 'billing.example_quota_user'
+    },
+    {
+        phone: '0833333333',
+        profile: 'none',
+        labelKey: 'billing.example_no_plan_user'
+    }
+];
+
+export const getCurrentMockPhone = () => localStorage.getItem('userPhone') || localStorage.getItem('lastLoginPhone') || '';
+
 export const getMockUserEntitlement = () => {
-    const profile = localStorage.getItem('mockBillingProfile') || 'none';
+    const phone = getCurrentMockPhone();
+    const savedProfiles = JSON.parse(localStorage.getItem('mockPhoneEntitlementProfiles') || '{}');
+    const profile = savedProfiles[phone]
+        || MOCK_PHONE_ENTITLEMENT_PROFILES[phone]
+        || localStorage.getItem('mockBillingProfile')
+        || 'none';
     return USER_ENTITLEMENTS[profile] || USER_ENTITLEMENTS.none;
 };
 
-export const setMockUserEntitlement = (profile) => {
+export const setMockUserEntitlement = (profile, phone = getCurrentMockPhone()) => {
+    if (phone) {
+        const savedProfiles = JSON.parse(localStorage.getItem('mockPhoneEntitlementProfiles') || '{}');
+        savedProfiles[phone] = profile;
+        localStorage.setItem('mockPhoneEntitlementProfiles', JSON.stringify(savedProfiles));
+    }
     localStorage.setItem('mockBillingProfile', profile);
     return USER_ENTITLEMENTS[profile] || USER_ENTITLEMENTS.none;
 };
