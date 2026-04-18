@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Card, Divider, Result, Spin, Tag, Typography } from 'antd';
 import {
-    DollarCircleOutlined,
     EnvironmentOutlined,
     ShoppingCartOutlined,
     ThunderboltFilled,
@@ -167,14 +166,6 @@ const Screen4 = () => {
                         <SlotStat label={t('screen1.slot_full')} value={cabinet.fullBatteries} color="#10b981" />
                         <SlotStat label={t('screen1.slot_empty')} value={cabinet.emptySlots} color="#64748b" />
                         <SlotStat label={t('screen1.slot_fault')} value={cabinet.faultSlots} color="#f59e0b" />
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', padding: '14px', borderRadius: '16px' }}>
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                            <DollarCircleOutlined style={{ color: '#10b981' }} />
-                            <Text strong>{t('screen1.price_label')}</Text>
-                        </div>
-                        <Text strong style={{ fontSize: '18px', color: '#10b981' }}>{cabinet.price} {t('charging.unit_baht')}/{t('charging.unit_swap')}</Text>
                     </div>
                 </Card>
 

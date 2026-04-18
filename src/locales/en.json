@@ -233,7 +233,7 @@
         "cancel_confirm_desc": "Are you sure you want to cancel the payment?"
     },
     "billing": {
-        "your_plan": "Your plan",
+        "your_plan": "Your package",
         "mock_profile": "Mock user type",
         "profile_none": "No plan",
         "profile_quota": "Swap credits",

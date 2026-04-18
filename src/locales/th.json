@@ -233,7 +233,7 @@
         "cancel_confirm_desc": "คุณต้องการยกเลิกการชำระเงินใช่หรือไม่?"
     },
     "billing": {
-        "your_plan": "สิทธิการใช้งานของคุณ",
+        "your_plan": "แพ็กเกจของคุณ",
         "mock_profile": "จำลองประเภทผู้ใช้",
         "profile_none": "ไม่มีแผน",
         "profile_quota": "รายครั้ง",
