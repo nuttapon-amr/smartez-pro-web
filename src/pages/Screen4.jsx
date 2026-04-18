@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Card, Divider, Result, Spin, Tag, Typography } from 'antd';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Button, Card, Divider, Modal, Result, Spin, Tag, Typography } from 'antd';
 import {
     EnvironmentOutlined,
     ShoppingCartOutlined,
@@ -36,6 +36,10 @@ const Screen4 = () => {
     const cabinet = SWAP_CABINETS[cabinetId] || SWAP_CABINETS.AMR001;
     const canStartSwap = cabinet.status === 'READY' && entitlement.hasActivePlan;
 
+    const goToPackages = useCallback(() => {
+        navigate(`/screen11?cabinetId=${cabinetId}`);
+    }, [cabinetId, navigate]);
+
     useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 500);
         if (cabinetId) localStorage.setItem('currentCabinetId', cabinetId);
@@ -44,13 +48,21 @@ const Screen4 = () => {
         return () => clearTimeout(timer);
     }, [cabinet.name, cabinetId, navigate]);
 
+    useEffect(() => {
+        if (isLoading || entitlement.hasActivePlan || hasActiveSwapSession()) return;
+
+        Modal.info({
+            title: t('billing.no_package_modal_title'),
+            content: t('billing.no_package_modal_desc'),
+            okText: t('billing.choose_plan'),
+            centered: true,
+            onOk: goToPackages
+        });
+    }, [entitlement.hasActivePlan, goToPackages, isLoading, t]);
+
     const startSwap = () => {
         if (!activateSwapFromEntitlement(entitlement)) return;
         navigate('/screen6');
-    };
-
-    const goToPackages = () => {
-        navigate(`/screen11?cabinetId=${cabinetId}`);
     };
 
     if (isLoading) {
@@ -114,24 +126,6 @@ const Screen4 = () => {
                             )}
                         </div>
                     </div>
-
-                    {!entitlement.hasActivePlan && (
-                        <Button
-                            block
-                            icon={<ShoppingCartOutlined />}
-                            onClick={goToPackages}
-                            style={{
-                                height: '46px',
-                                borderRadius: '14px',
-                                borderColor: '#10b981',
-                                color: '#ffffff',
-                                background: '#10b981',
-                                fontWeight: 800
-                            }}
-                        >
-                            {t('billing.choose_plan')}
-                        </Button>
-                    )}
                 </Card>
 
                 <Card style={{ borderRadius: '24px', border: '1px solid #D1FAE5', boxShadow: '0 12px 30px rgba(16,185,129,0.10)' }} styles={{ body: { padding: '22px' } }}>

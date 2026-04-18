@@ -6,7 +6,7 @@ import {
     ClockCircleFilled,
     ThunderboltFilled
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MobileLayout from '../components/MobileLayout';
 import Header from '../components/Header';
@@ -88,8 +88,13 @@ const PackageCard = ({ option, isSelected, onSelect, t }) => (
 const Screen11 = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [selectedBillingId, setSelectedBillingId] = useState(null);
     const entitlement = getMockUserEntitlement();
+    const cabinetId = searchParams.get('cabinetId')
+        || localStorage.getItem('currentCabinetId')
+        || localStorage.getItem('currentChargerId')
+        || 'AMR001';
 
     React.useEffect(() => {
         document.title = `${t('screen3.title')} | AMR Battery Swap`;
@@ -115,7 +120,9 @@ const Screen11 = () => {
                 billingOptionId: selectedOption.id,
                 billingType: selectedOption.type,
                 packageLabel: t(selectedOption.titleKey),
-                quotaLabel: t(selectedOption.quotaLabelKey)
+                quotaLabel: t(selectedOption.quotaLabelKey),
+                returnPath: `/screen4?cabinetId=${cabinetId}`,
+                paymentPurpose: 'package_purchase'
             }
         });
     };

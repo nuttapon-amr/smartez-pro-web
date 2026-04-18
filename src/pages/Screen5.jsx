@@ -27,6 +27,8 @@ const Screen4 = () => {
     const amountToPay = location.state?.price ?? selectedBilling.price;
     const packageLabel = location.state?.packageLabel || t(selectedBilling.titleKey);
     const quotaLabel = location.state?.quotaLabel || t(selectedBilling.quotaLabelKey);
+    const returnPath = location.state?.returnPath || '/screen4';
+    const isPackagePurchase = location.state?.paymentPurpose === 'package_purchase';
 
     const handleDownloadQR = () => {
         const link = document.createElement('a');
@@ -58,7 +60,7 @@ const Screen4 = () => {
             const isSuccess = Math.random() > 0.2;
 
             if (isSuccess) {
-                message.success(t('payment.success_slip'));
+                message.success(isPackagePurchase ? t('payment.package_success') : t('payment.success_slip'));
                 if (selectedBilling.group === 'per_swap') {
                     setMockUserEntitlement('quota');
                 } else if (selectedBilling.id === 'pass_1d') {
@@ -66,10 +68,16 @@ const Screen4 = () => {
                 } else if (selectedBilling.group === 'pass') {
                     setMockUserEntitlement('monthly');
                 }
-                localStorage.setItem('activeSwapSession', 'true');
                 localStorage.setItem('activeBillingOptionId', billingOptionId);
                 localStorage.setItem('activeBillingMode', selectedBilling.type);
-                navigate('/screen6');
+                if (isPackagePurchase) {
+                    localStorage.removeItem('activeSwapSession');
+                    localStorage.removeItem('isCharging');
+                    navigate(returnPath, { replace: true });
+                } else {
+                    localStorage.setItem('activeSwapSession', 'true');
+                    navigate('/screen6');
+                }
             } else {
                 Modal.error({
                     title: t('payment.failed_slip_title'),
@@ -236,7 +244,7 @@ const Screen4 = () => {
                                 okText: t('common.ok'),
                                 cancelText: t('common.cancel'),
                                 centered: true,
-                                onOk: () => navigate('/screen11'),
+                                onOk: () => navigate(returnPath.includes('screen4') ? returnPath.replace('/screen4', '/screen11') : '/screen11'),
                                 okButtonProps: {
                                     danger: true,
                                     style: { borderRadius: '8px' }
