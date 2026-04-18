@@ -1,215 +1,219 @@
-import React, { useState } from 'react';
-import { Button, Typography, Row, Col, Card, Space, Divider, Badge } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Button, Card, Divider, Result, Spin, Tag, Typography } from 'antd';
 import {
+    DollarCircleOutlined,
+    EnvironmentOutlined,
+    ShoppingCartOutlined,
     ThunderboltFilled,
-    EnvironmentFilled,
-    CheckCircleFilled,
-    ClockCircleFilled,
-    CreditCardFilled,
-    WalletOutlined
+    ThunderboltOutlined
 } from '@ant-design/icons';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import MobileLayout from '../components/MobileLayout';
 import Header from '../components/Header';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { SWAP_CABINETS, getMockUserEntitlement } from '../data/mockSwapData';
+import { activateSwapFromEntitlement, hasActiveSwapSession } from '../utils/swapAccess';
 
 const { Title, Text } = Typography;
 
-const Screen3 = () => {
-    const { t } = useTranslation();
+const SlotStat = ({ label, value, color }) => (
+    <div style={{ background: '#F9FAFB', borderRadius: '14px', padding: '10px 8px', textAlign: 'center', border: '1px solid #F1F5F9' }}>
+        <Text type="secondary" style={{ display: 'block', fontSize: '11px', marginBottom: '2px' }}>{label}</Text>
+        <Text strong style={{ fontSize: '18px', color }}>{value}</Text>
+    </div>
+);
+
+const Screen4 = () => {
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
-    const [selectedHour, setSelectedHour] = useState(null);
+    const [searchParams] = useSearchParams();
+    const [isLoading, setIsLoading] = useState(true);
+    const [entitlement] = useState(() => getMockUserEntitlement());
 
-    React.useEffect(() => {
-        document.title = `${t('screen3.title')} | AMR Battery Swap`;
-        const hasActiveSwap = localStorage.getItem('activeSwapSession') === 'true'
-            || localStorage.getItem('isCharging') === 'true';
-        if (hasActiveSwap) {
-            navigate('/screen6');
-        }
-    }, [navigate, t]);
+    const cabinetId = searchParams.get('cabinetId')
+        || localStorage.getItem('currentCabinetId')
+        || localStorage.getItem('currentChargerId')
+        || 'AMR001';
+    const cabinet = SWAP_CABINETS[cabinetId] || SWAP_CABINETS.AMR001;
+    const canStartSwap = cabinet.status === 'READY' && entitlement.hasActivePlan;
 
-    const handlePayment = () => {
-        if (!selectedHour || !selectedOption) return;
-        navigate('/screen5', {
-            state: {
-                price: selectedOption.price,
-                hours: selectedOption.value,
-                packageLabel: selectedOption.label
-            }
-        });
+    useEffect(() => {
+        const timer = setTimeout(() => setIsLoading(false), 500);
+        if (cabinetId) localStorage.setItem('currentCabinetId', cabinetId);
+        document.title = `${cabinet.name} | AMR Battery Swap`;
+        if (hasActiveSwapSession()) navigate('/screen6', { replace: true });
+        return () => clearTimeout(timer);
+    }, [cabinet.name, cabinetId, navigate]);
+
+    const startSwap = () => {
+        if (!activateSwapFromEntitlement(entitlement)) return;
+        navigate('/screen6');
     };
 
-    const hourOptions = [
-        { label: `1 ${t('charging.unit_swap')}`, value: 1, price: 45 },
-        { label: `3 ${t('charging.unit_swap')}`, value: 3, price: 129 },
-        { label: `7 ${t('charging.unit_swap')}`, value: 7, price: 280 },
-        { label: `30 ${t('charging.unit_swap')}`, value: 30, price: 990 },
-    ];
+    const goToPackages = () => {
+        navigate(`/screen11?cabinetId=${cabinetId}`);
+    };
 
-    const selectedOption = hourOptions.find(opt => opt.value === selectedHour);
+    if (isLoading) {
+        return (
+            <MobileLayout>
+                <Header title={t('screen1.station_info')} showBack={false} />
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Spin size="large" />
+                </div>
+            </MobileLayout>
+        );
+    }
+
+    if (!cabinet) {
+        return (
+            <MobileLayout>
+                <div style={{ minHeight: '100vh', padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Result
+                        status="warning"
+                        title={t('screen1.invalid_charger_title')}
+                        subTitle={t('screen1.invalid_charger_desc')}
+                        extra={<Button type="primary" onClick={() => navigate('/screen1')}>{t('screen1.login_button')}</Button>}
+                    />
+                </div>
+            </MobileLayout>
+        );
+    }
 
     return (
         <MobileLayout>
-            <Header title={t('screen3.title')} />
-
-            <div style={{ padding: '0 20px 24px 20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-
-                {/* Detailed Station Info Card */}
-                <Card
-                    style={{
-                        borderRadius: '20px',
-                        border: '1px solid #f1f5f9',
-                        marginBottom: '24px',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
-                    }}
-                    styles={{ body: { padding: '20px' } }}
-                >
-                    <Space direction="vertical" size={16} style={{ width: '100%' }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                            <div style={{
-                                padding: '10px',
-                                backgroundColor: '#ecfdf5',
-                                borderRadius: '12px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}>
-                                <EnvironmentFilled style={{ color: '#EF4444', fontSize: '20px' }} />
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <Title level={5} style={{ margin: '0 0 4px 0', fontSize: '18px' }}>{t('mock_station.name')}</Title>
-                                <Text type="secondary" style={{ fontSize: '13px', lineHeight: '1.4', display: 'block' }}>
-                                    {t('mock_station.address')}
-                                </Text>
-                            </div>
-                        </div>
-
-                        <Divider style={{ margin: '0' }} />
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <div>
-                                <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: '2px' }}>{t('screen6.charger_id')}</Text>
-                                <Text strong style={{ fontSize: '14px', wordBreak: 'break-word', display: 'block', lineHeight: '1.4' }}>
-                                    {t('mock_station.charger_id')}
-                                </Text>
-                            </div>
-
-                            <Row gutter={16}>
-                                <Col span={12}>
-                                    <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>{t('screen6.connector_no')}</Text>
-                                    <Text strong style={{ fontSize: '14px' }}>ช่อง 04</Text>
-                                </Col>
-                                <Col span={12}>
-                                    <Text type="secondary" style={{ fontSize: '12px', display: 'block' }}>{t('screen6.connector_type')}</Text>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <ThunderboltFilled style={{ color: '#10b981', fontSize: '14px' }} />
-                                        <Text strong style={{ fontSize: '14px' }}>AMR-M2 72V</Text>
-                                    </div>
-                                </Col>
-                            </Row>
-                        </div>
-                    </Space>
-                </Card>
-
-                {/* Selection Section */}
-                <div style={{ marginBottom: '16px' }}>
-                    <Text strong style={{ fontSize: '16px', color: '#1f2937' }}>{t('screen3.title')}</Text>
-                </div>
-
-                <Row gutter={[12, 12]} style={{ marginBottom: '24px' }}>
-                    {hourOptions.map(option => (
-                        <Col span={12} key={option.value}>
-                            <div
-                                onClick={() => setSelectedHour(option.value)}
-                                style={{
-                                    cursor: 'pointer',
-                                    padding: '16px',
-                                    borderRadius: '16px',
-                                    border: `2px solid ${selectedHour === option.value ? '#EF4444' : '#f3f4f6'}`,
-                                    backgroundColor: selectedHour === option.value ? '#fff' : '#fff',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    transition: 'all 0.3s ease',
-                                    position: 'relative',
-                                    boxShadow: selectedHour === option.value ? '0 8px 20px rgba(239, 68, 68, 0.15)' : 'none',
-                                    transform: selectedHour === option.value ? 'translateY(-2px)' : 'none'
-                                }}
-                            >
-                                {selectedHour === option.value && (
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '-10px',
-                                        right: '-10px',
-                                        backgroundColor: '#EF4444',
-                                        borderRadius: '50%',
-                                        width: '24px',
-                                        height: '24px',
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        border: '3px solid #fff',
-                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                    }}>
-                                        <CheckCircleFilled style={{ color: '#fff', fontSize: '14px' }} />
-                                    </div>
-                                )}
-                                <ClockCircleFilled style={{
-                                    fontSize: '28px',
-                                    color: selectedHour === option.value ? '#EF4444' : '#d1d5db',
-                                    marginBottom: '4px'
-                                }} />
-                                <Text strong style={{
-                                    fontSize: '18px',
-                                    color: selectedHour === option.value ? '#EF4444' : '#1f2937'
-                                }}>
-                                    {option.label}
-                                </Text>
-                                <Text style={{
-                                    fontSize: '13px',
-                                    color: selectedHour === option.value ? '#EF4444' : '#6b7280'
-                                }}>
-                                    ฿{option.price}
-                                </Text>
-                            </div>
-                        </Col>
-                    ))}
-                </Row>
-
-
-
-                {/* Footer Action */}
-                <div>
+            <Header title={t('screen1.station_info')} showBack={false} />
+            <div style={{ minHeight: '100%', padding: '18px 20px 24px', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%)' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '14px' }}>
                     <Button
-                        type="primary"
-                        size="large"
-                        block
-                        disabled={!selectedHour}
-                        style={{
-                            height: '60px',
-                            borderRadius: '30px',
-                            backgroundColor: selectedHour ? '#EF4444' : '#d1d5db',
-                            border: 'none',
-                            fontSize: '18px',
-                            fontWeight: 'bold',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '12px',
-                            boxShadow: selectedHour ? '0 10px 15px -3px rgba(239, 68, 68, 0.4)' : 'none'
-                        }}
-                        onClick={handlePayment}
+                        type="text"
+                        onClick={() => i18n.changeLanguage(i18n.language === 'th' ? 'en' : 'th')}
+                        style={{ background: 'rgba(255,255,255,0.85)', borderRadius: '12px', height: 'auto', padding: '4px 12px', fontWeight: 700 }}
                     >
-                        {selectedHour && <ThunderboltFilled />}
-                        {t('screen3.start_charging')}
+                        {i18n.language === 'th' ? 'TH' : 'EN'}
                     </Button>
                 </div>
 
+                <Card style={{ borderRadius: '22px', border: entitlement.hasActivePlan ? '1px solid #BBF7D0' : '1px solid #E2E8F0', marginBottom: '16px', background: entitlement.hasActivePlan ? '#F0FDF4' : '#FFFFFF' }} styles={{ body: { padding: '18px' } }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start', marginBottom: '14px' }}>
+                        <div>
+                            <Text type="secondary" style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '0.8px', textTransform: 'uppercase' }}>
+                                {t('billing.your_plan')}
+                            </Text>
+                            <Title level={5} style={{ margin: '6px 0 4px 0' }}>{t(entitlement.planNameKey)}</Title>
+                            {entitlement.hasActivePlan ? (
+                                <>
+                                    <Text type="secondary" style={{ display: 'block', fontSize: '12px' }}>
+                                        {t('billing.remaining_quota', { count: entitlement.remainingQuota })}
+                                    </Text>
+                                    <Text type="secondary" style={{ display: 'block', fontSize: '12px' }}>
+                                        {t('billing.active_until', { date: new Date(entitlement.expiresAt).toLocaleDateString(i18n.language === 'th' ? 'th-TH' : 'en-GB') })}
+                                    </Text>
+                                </>
+                            ) : (
+                                <Text type="secondary" style={{ fontSize: '12px' }}>{t('billing.payment_required')}</Text>
+                            )}
+                        </div>
+                        <Tag color={entitlement.hasActivePlan ? 'success' : 'default'} style={{ margin: 0, borderRadius: '999px', fontWeight: 700 }}>
+                            {entitlement.hasActivePlan ? t('billing.no_payment_required') : t('billing.payment_required')}
+                        </Tag>
+                    </div>
+
+                    <Button
+                        block
+                        icon={<ShoppingCartOutlined />}
+                        onClick={goToPackages}
+                        style={{
+                            height: '46px',
+                            borderRadius: '14px',
+                            borderColor: '#10b981',
+                            color: entitlement.hasActivePlan ? '#047857' : '#ffffff',
+                            background: entitlement.hasActivePlan ? '#ffffff' : '#10b981',
+                            fontWeight: 800
+                        }}
+                    >
+                        {t('billing.choose_plan')}
+                    </Button>
+                </Card>
+
+                <Card style={{ borderRadius: '24px', border: '1px solid #D1FAE5', boxShadow: '0 12px 30px rgba(16,185,129,0.10)' }} styles={{ body: { padding: '22px' } }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start' }}>
+                        <div>
+                            <Text type="secondary" style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '1px', textTransform: 'uppercase' }}>
+                                {t('screen1.station_label')}
+                            </Text>
+                            <Title level={3} style={{ margin: '8px 0 10px 0', color: '#0f172a' }}>{cabinet.name}</Title>
+                        </div>
+                        <Tag color={cabinet.status === 'READY' ? 'success' : 'warning'} style={{ margin: 0, borderRadius: '999px', fontWeight: 800 }}>
+                            {cabinet.status === 'READY' ? t('screen1.status_available') : t('screen1.status_unavailable')}
+                        </Tag>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '18px' }}>
+                        <EnvironmentOutlined style={{ color: '#10b981', marginTop: '3px' }} />
+                        <Text type="secondary" style={{ fontSize: '13px', lineHeight: 1.5 }}>{cabinet.address}</Text>
+                    </div>
+
+                    <Divider style={{ margin: '14px 0' }} />
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'center', background: '#F8FAFC', padding: '14px', borderRadius: '16px', marginBottom: '12px' }}>
+                        <div>
+                            <Text type="secondary" style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>{t('screen1.charger_type_label')}</Text>
+                            <Text strong>{cabinet.batteryModel}</Text>
+                        </div>
+                        <ThunderboltOutlined style={{ color: '#10b981', fontSize: '22px' }} />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                        <SlotStat label={t('screen1.slot_full')} value={cabinet.fullBatteries} color="#10b981" />
+                        <SlotStat label={t('screen1.slot_empty')} value={cabinet.emptySlots} color="#64748b" />
+                        <SlotStat label={t('screen1.slot_fault')} value={cabinet.faultSlots} color="#f59e0b" />
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', padding: '14px', borderRadius: '16px' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <DollarCircleOutlined style={{ color: '#10b981' }} />
+                            <Text strong>{t('screen1.price_label')}</Text>
+                        </div>
+                        <Text strong style={{ fontSize: '18px', color: '#10b981' }}>{cabinet.price} {t('charging.unit_baht')}/{t('charging.unit_swap')}</Text>
+                    </div>
+                </Card>
+
+                <div style={{ marginTop: 'auto', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {entitlement.hasActivePlan && (
+                        <Button
+                            type="primary"
+                            size="large"
+                            block
+                            disabled={!canStartSwap}
+                            icon={<ThunderboltFilled />}
+                            onClick={startSwap}
+                            style={{ height: '60px', borderRadius: '20px', background: '#10b981', border: 'none', fontSize: '18px', fontWeight: 800 }}
+                        >
+                            {t('billing.start_swap')}
+                        </Button>
+                    )}
+                    <Button
+                        size="large"
+                        block
+                        icon={<ShoppingCartOutlined />}
+                        onClick={goToPackages}
+                        style={{
+                            height: '58px',
+                            borderRadius: '20px',
+                            borderColor: entitlement.hasActivePlan ? '#10b981' : '#10b981',
+                            color: entitlement.hasActivePlan ? '#047857' : '#ffffff',
+                            background: entitlement.hasActivePlan ? '#ffffff' : '#10b981',
+                            fontSize: '17px',
+                            fontWeight: 800
+                        }}
+                    >
+                        {t('billing.choose_plan')}
+                    </Button>
+                </div>
             </div>
         </MobileLayout>
     );
 };
 
-export default Screen3;
+export default Screen4;

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import authService from '../services/authService';
+import { getPostAuthSwapTarget } from '../utils/swapAccess';
 
 export const useAuth = () => {
     const { t } = useTranslation();
@@ -15,16 +16,12 @@ export const useAuth = () => {
 
     useEffect(() => {
         const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-        const hasActiveSwap = localStorage.getItem('activeSwapSession') === 'true'
-            || localStorage.getItem('isCharging') === 'true';
         const publicScreens = ['/screen1', '/screen3', '/'];
 
         if (isLoggedIn && publicScreens.includes(location.pathname)) {
             const cabinetId = localStorage.getItem('currentCabinetId') || localStorage.getItem('currentChargerId');
-            const nextPath = hasActiveSwap
-                ? '/screen6'
-                : cabinetId ? `/screen2?cabinetId=${cabinetId}` : '/screen2';
-            navigate(nextPath, { replace: true });
+            const target = getPostAuthSwapTarget(cabinetId);
+            navigate(target.path, { replace: true, state: target.state });
         }
     }, [navigate, location.pathname]);
 

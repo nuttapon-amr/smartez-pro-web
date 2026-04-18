@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Card, Divider, Result, Spin, Typography } from 'antd';
+import { Button, Card, Divider, Result, Spin, Tag, Typography } from 'antd';
 import { DollarCircleOutlined, EnvironmentOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MobileLayout from '../components/MobileLayout';
-import { SWAP_CABINETS } from '../data/mockSwapData';
+import { SWAP_CABINETS, getMockUserEntitlement, setMockUserEntitlement } from '../data/mockSwapData';
 
 const { Title, Text } = Typography;
 
@@ -21,6 +21,7 @@ const Screen2 = () => {
     const location = useLocation();
     const [searchParams] = useSearchParams();
     const [isLoading, setIsLoading] = useState(true);
+    const [entitlement, setEntitlement] = useState(() => getMockUserEntitlement());
 
     const cabinetId = searchParams.get('cabinetId') || searchParams.get('chargerId');
     const stationInfo = cabinetId ? SWAP_CABINETS[cabinetId] || null : null;
@@ -36,6 +37,17 @@ const Screen2 = () => {
     const goToAuth = () => {
         const authPath = cabinetId ? `/screen1?cabinetId=${cabinetId}` : '/screen1';
         navigate(authPath, { state: { from: location } });
+    };
+
+    const changeMockProfile = (profile) => {
+        setEntitlement(setMockUserEntitlement(profile));
+    };
+
+    const startWithCurrentPlan = () => {
+        localStorage.setItem('activeSwapSession', 'true');
+        localStorage.setItem('activeBillingOptionId', entitlement.billingOptionId);
+        localStorage.setItem('activeBillingMode', entitlement.profile);
+        navigate('/screen6');
     };
 
     if (isLoading) {
@@ -112,6 +124,59 @@ const Screen2 = () => {
                     </div>
                 </Card>
 
+                <Card style={{ borderRadius: '22px', border: '1px solid #E2E8F0', marginTop: '16px' }} styles={{ body: { padding: '18px' } }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start', marginBottom: '14px' }}>
+                        <div>
+                            <Text type="secondary" style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '0.8px', textTransform: 'uppercase' }}>
+                                {t('billing.your_plan')}
+                            </Text>
+                            <Title level={5} style={{ margin: '6px 0 4px 0' }}>{t(entitlement.planNameKey)}</Title>
+                            {entitlement.hasActivePlan ? (
+                                <>
+                                    <Text type="secondary" style={{ display: 'block', fontSize: '12px' }}>
+                                        {t('billing.remaining_quota', { count: entitlement.remainingQuota })}
+                                    </Text>
+                                    <Text type="secondary" style={{ display: 'block', fontSize: '12px' }}>
+                                        {t('billing.active_until', { date: new Date(entitlement.expiresAt).toLocaleDateString(i18n.language === 'th' ? 'th-TH' : 'en-GB') })}
+                                    </Text>
+                                </>
+                            ) : (
+                                <Text type="secondary" style={{ fontSize: '12px' }}>{t('billing.payment_required')}</Text>
+                            )}
+                        </div>
+                        <Tag color={entitlement.hasActivePlan ? 'success' : 'default'} style={{ margin: 0, borderRadius: '999px', fontWeight: 700 }}>
+                            {entitlement.hasActivePlan ? t('billing.no_payment_required') : t('billing.payment_required')}
+                        </Tag>
+                    </div>
+
+                    <Text type="secondary" style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '8px' }}>
+                        {t('billing.mock_profile')}
+                    </Text>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                        {[
+                            ['none', t('billing.profile_none')],
+                            ['daily', t('billing.profile_daily')],
+                            ['monthly', t('billing.profile_monthly')]
+                        ].map(([profile, label]) => (
+                            <button
+                                key={profile}
+                                type="button"
+                                onClick={() => changeMockProfile(profile)}
+                                style={{
+                                    border: `1px solid ${entitlement.profile === profile ? '#10b981' : '#E2E8F0'}`,
+                                    background: entitlement.profile === profile ? '#ECFDF5' : '#FFFFFF',
+                                    color: entitlement.profile === profile ? '#047857' : '#475569',
+                                    borderRadius: '12px',
+                                    padding: '10px 6px',
+                                    fontWeight: 800
+                                }}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                </Card>
+
                 <div style={{ marginTop: 'auto', paddingTop: '24px' }}>
                     <Button
                         type="primary"
@@ -119,15 +184,19 @@ const Screen2 = () => {
                         block
                         disabled={stationInfo.status !== 'READY'}
                         onClick={() => {
-                            if (isLoggedIn) {
-                                navigate('/screen4');
+                            if (isLoggedIn && entitlement.hasActivePlan) {
+                                startWithCurrentPlan();
+                            } else if (isLoggedIn) {
+                                navigate(cabinetId ? `/screen4?cabinetId=${cabinetId}` : '/screen4');
                             } else {
                                 goToAuth();
                             }
                         }}
                         style={{ height: '60px', borderRadius: '20px', background: '#10b981', border: 'none', fontSize: '18px', fontWeight: 800 }}
                     >
-                        {isLoggedIn ? t('common.next') : `${t('screen1.login_button')} / ${t('screen1.otp_mode')}`}
+                        {isLoggedIn
+                            ? entitlement.hasActivePlan ? t('billing.use_current_plan') : t('billing.choose_plan')
+                            : `${t('screen1.login_button')} / ${t('screen1.otp_mode')}`}
                     </Button>
                 </div>
             </div>

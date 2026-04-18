@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Button, Typography, Card, Space, Divider, Modal, Upload, Spin, message } from 'antd';
+import { Button, Typography, Card, Space, Modal, Upload, Spin, message } from 'antd';
 import {
     DownloadOutlined,
-    WarningFilled,
     UploadOutlined,
     LoadingOutlined
 } from '@ant-design/icons';
@@ -10,6 +9,7 @@ import MobileLayout from '../components/MobileLayout';
 import Header from '../components/Header';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { getBillingOption, setMockUserEntitlement } from '../data/mockSwapData';
 
 import qrImage from '../assets/thai_promptpay_qr_mockup.png';
 
@@ -22,9 +22,11 @@ const Screen4 = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [uploading, setUploading] = useState(false);
 
-    // Mock price from state or default to one battery swap.
-    const amountToPay = location.state?.price || 45.00;
-    const hours = location.state?.hours || 1;
+    const billingOptionId = location.state?.billingOptionId || 'pay_per_swap';
+    const selectedBilling = getBillingOption(billingOptionId);
+    const amountToPay = location.state?.price ?? selectedBilling.price;
+    const packageLabel = location.state?.packageLabel || t(selectedBilling.titleKey);
+    const quotaLabel = location.state?.quotaLabel || t(selectedBilling.quotaLabelKey);
 
     const handleDownloadQR = () => {
         const link = document.createElement('a');
@@ -57,7 +59,14 @@ const Screen4 = () => {
 
             if (isSuccess) {
                 message.success(t('payment.success_slip'));
+                if (selectedBilling.id === 'daily_pass') {
+                    setMockUserEntitlement('daily');
+                } else if (selectedBilling.type === 'monthly_subscription') {
+                    setMockUserEntitlement('monthly');
+                }
                 localStorage.setItem('activeSwapSession', 'true');
+                localStorage.setItem('activeBillingOptionId', billingOptionId);
+                localStorage.setItem('activeBillingMode', selectedBilling.type);
                 navigate('/screen6');
             } else {
                 Modal.error({
@@ -139,8 +148,11 @@ const Screen4 = () => {
                         backgroundColor: '#f1f5f9',
                         borderRadius: '20px'
                     }}>
-                        <Text style={{ fontSize: '12px', color: '#64748b' }}>{t('payment.charging_duration', { hours })}</Text>
+                        <Text style={{ fontSize: '12px', color: '#64748b' }}>{packageLabel}</Text>
                     </div>
+                    <Text type="secondary" style={{ display: 'block', fontSize: '12px', marginTop: '8px' }}>
+                        {quotaLabel}
+                    </Text>
                 </div>
 
                 {/* QR Code Card */}
@@ -222,7 +234,7 @@ const Screen4 = () => {
                                 okText: t('common.ok'),
                                 cancelText: t('common.cancel'),
                                 centered: true,
-                                onOk: () => navigate('/screen4'),
+                                onOk: () => navigate('/screen11'),
                                 okButtonProps: {
                                     danger: true,
                                     style: { borderRadius: '8px' }

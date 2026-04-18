@@ -4,15 +4,15 @@ import { EditOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import MobileLayout from '../components/MobileLayout';
 import useAuth from '../hooks/useAuth';
 import OTPInput from '../components/OTPInput';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { getPostAuthSwapTarget } from '../utils/swapAccess';
 
 const { Title, Text } = Typography;
 
 const Screen2 = () => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
-    const location = useLocation();
     const [searchParams] = useSearchParams();
     const mode = searchParams.get('mode'); // 'register' or 'reset'
     const { phone, otp, setOtp, verifyOtp, isLoading, login, editPhone, resendOtp, error } = useAuth();
@@ -22,23 +22,7 @@ const Screen2 = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const getPostAuthTarget = () => {
-        const from = location.state?.from;
-        if (from?.pathname && from.pathname !== '/screen1' && from.pathname !== '/screen3') {
-            return {
-                path: `${from.pathname}${from.search || ''}`,
-                state: from.state,
-            };
-        }
-
-        const hasActiveSwap = localStorage.getItem('activeSwapSession') === 'true'
-            || localStorage.getItem('isCharging') === 'true';
-        const savedCabinetId = localStorage.getItem('currentCabinetId') || localStorage.getItem('currentChargerId');
-        return {
-            path: hasActiveSwap
-                ? '/screen6'
-                : savedCabinetId ? `/screen2?cabinetId=${savedCabinetId}` : '/screen2',
-            state: undefined,
-        };
+        return getPostAuthSwapTarget(searchParams.get('cabinetId'));
     };
 
     useEffect(() => {

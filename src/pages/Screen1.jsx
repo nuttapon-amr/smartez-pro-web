@@ -5,6 +5,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MobileLayout from '../components/MobileLayout';
 import useAuth from '../hooks/useAuth';
+import { getPostAuthSwapTarget } from '../utils/swapAccess';
 
 const { Title, Text } = Typography;
 
@@ -20,20 +21,7 @@ const Screen1 = () => {
     const cabinetId = searchParams.get('cabinetId') || localStorage.getItem('currentCabinetId') || localStorage.getItem('currentChargerId');
 
     const getPostAuthTarget = () => {
-        const from = location.state?.from;
-        if (from?.pathname && from.pathname !== '/screen1' && from.pathname !== '/screen3') {
-            return {
-                path: `${from.pathname}${from.search || ''}`,
-                state: from.state,
-            };
-        }
-
-        const hasActiveSwap = localStorage.getItem('activeSwapSession') === 'true'
-            || localStorage.getItem('isCharging') === 'true';
-
-        if (hasActiveSwap) return { path: '/screen6' };
-        if (cabinetId) return { path: `/screen2?cabinetId=${cabinetId}` };
-        return { path: '/screen2' };
+        return getPostAuthSwapTarget(cabinetId);
     };
 
     const handleRegister = () => {

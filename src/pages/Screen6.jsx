@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Typography, Modal, Spin, Space, Divider, Card } from 'antd';
+import { Button, Typography, Modal, Spin, Space, Divider, Card, Tag } from 'antd';
 import {
     CheckCircleFilled,
     ClockCircleOutlined,
@@ -15,6 +15,7 @@ import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
 import useSwapSession from '../hooks/useSwapSession';
 import { useTranslation } from 'react-i18next';
+import { getBillingOption } from '../data/mockSwapData';
 
 const { Title, Text } = Typography;
 
@@ -105,6 +106,10 @@ const Screen5 = () => {
 
     const stationName = i18n.language === 'th' ? MOCK_SWAP.stationNameTh : MOCK_SWAP.stationNameEn;
     const stationAddress = i18n.language === 'th' ? MOCK_SWAP.stationAddressTh : MOCK_SWAP.stationAddressEn;
+    const activeBillingOptionId = localStorage.getItem('activeBillingOptionId') || 'pay_per_swap';
+    const activeBilling = getBillingOption(activeBillingOptionId);
+    const activeBillingLabel = t(activeBilling.titleKey);
+    const activeBillingQuota = t(activeBilling.quotaLabelKey);
     const steps = [
         { label: t('screen5.step_payment_done'), done: true },
         { label: t('screen5.step_return_opened'), done: true },
@@ -140,6 +145,10 @@ const Screen5 = () => {
                             {MOCK_SWAP.batteryModel}
                         </div>
 
+                        <Tag color="green" style={{ margin: 0, borderRadius: '20px', padding: '4px 10px', fontSize: '11px', fontWeight: 700 }}>
+                            {activeBillingLabel}
+                        </Tag>
+
                         <Button
                             type="text"
                             icon={<InfoCircleFilled style={{ color: '#3b82f6', fontSize: '18px' }} />}
@@ -168,6 +177,13 @@ const Screen5 = () => {
 
                     <Card style={{ borderRadius: '22px', border: '1px solid #e2e8f0', marginBottom: '18px' }} styles={{ body: { padding: '18px' } }}>
                         <Space direction="vertical" size={14} style={{ width: '100%' }}>
+                            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '16px', padding: '12px', display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
+                                <div>
+                                    <Text type="secondary" style={{ display: 'block', fontSize: '11px', fontWeight: 700 }}>{t('billing.your_plan')}</Text>
+                                    <Text strong style={{ fontSize: '14px', color: '#047857' }}>{activeBillingLabel}</Text>
+                                </div>
+                                <Text type="secondary" style={{ fontSize: '12px', textAlign: 'right' }}>{activeBillingQuota}</Text>
+                            </div>
                             {steps.map((step, index) => (
                                 <div key={step.label} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                                     <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: step.done ? '#10b981' : step.active ? '#f59e0b' : '#e2e8f0', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '12px', fontWeight: 800 }}>

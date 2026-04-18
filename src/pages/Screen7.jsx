@@ -14,7 +14,7 @@ import MobileLayout from '../components/MobileLayout';
 import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { SWAP_SUMMARY } from '../data/mockSwapData';
+import { SWAP_SUMMARY, getBillingOption } from '../data/mockSwapData';
 
 const { Title, Text } = Typography;
 
@@ -52,6 +52,10 @@ const Screen6 = () => {
         chargingStartDate: SWAP_SUMMARY.startedAt,
         chargingEndDate: SWAP_SUMMARY.completedAt,
     };
+    const activeBillingOptionId = localStorage.getItem('activeBillingOptionId') || 'pay_per_swap';
+    const activeBilling = getBillingOption(activeBillingOptionId);
+    const activeBillingLabel = t(activeBilling.titleKey);
+    const activeBillingQuota = t(activeBilling.quotaLabelKey);
 
     useEffect(() => {
         document.title = `${t('screen6.title')} | AMR Battery Swap`;
@@ -231,6 +235,17 @@ const Screen6 = () => {
                                 <Text style={{ fontSize: '14px' }}>{t('screen5.quota', { duration: '' }).replace(': ', '')}</Text>
                             </div>
                             <Text strong style={{ fontSize: '14px', color: '#3b82f6' }}>{summaryData.purchasedDuration}</Text>
+                        </div>
+                        <Divider style={{ margin: 0 }} />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <TagFilled style={{ color: '#10b981', fontSize: '16px' }} />
+                                <Text style={{ fontSize: '14px' }}>{t('billing.your_plan')}</Text>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                                <Text strong style={{ display: 'block', fontSize: '14px', color: '#047857' }}>{activeBillingLabel}</Text>
+                                <Text type="secondary" style={{ fontSize: '12px' }}>{activeBillingQuota}</Text>
+                            </div>
                         </div>
                     </div>
                 </Card>

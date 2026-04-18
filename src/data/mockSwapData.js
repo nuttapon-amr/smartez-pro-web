@@ -31,6 +31,84 @@ export const SWAP_CABINETS = {
     }
 };
 
+export const BILLING_OPTIONS = [
+    {
+        id: 'pay_per_swap',
+        type: 'pay_per_swap',
+        titleKey: 'billing.pay_per_swap_title',
+        descriptionKey: 'billing.pay_per_swap_desc',
+        price: 45,
+        quotaLabelKey: 'billing.one_swap',
+        badgeKey: null
+    },
+    {
+        id: 'daily_pass',
+        type: 'daily_pass',
+        titleKey: 'billing.daily_pass_title',
+        descriptionKey: 'billing.daily_pass_desc',
+        price: 99,
+        quotaLabelKey: 'billing.daily_quota',
+        badgeKey: 'billing.popular'
+    },
+    {
+        id: 'monthly_basic',
+        type: 'monthly_subscription',
+        titleKey: 'billing.monthly_basic_title',
+        descriptionKey: 'billing.monthly_basic_desc',
+        price: 899,
+        quotaLabelKey: 'billing.monthly_basic_quota',
+        badgeKey: null
+    },
+    {
+        id: 'monthly_pro',
+        type: 'monthly_subscription',
+        titleKey: 'billing.monthly_pro_title',
+        descriptionKey: 'billing.monthly_pro_desc',
+        price: 1299,
+        quotaLabelKey: 'billing.monthly_pro_quota',
+        badgeKey: 'billing.best_value'
+    }
+];
+
+export const USER_ENTITLEMENTS = {
+    none: {
+        profile: 'none',
+        hasActivePlan: false,
+        planNameKey: 'billing.no_active_plan',
+        remainingQuota: 0,
+        expiresAt: null,
+        billingOptionId: null
+    },
+    daily: {
+        profile: 'daily',
+        hasActivePlan: true,
+        planNameKey: 'billing.daily_pass_title',
+        remainingQuota: 4,
+        expiresAt: '2026-04-18T23:59:00',
+        billingOptionId: 'daily_pass'
+    },
+    monthly: {
+        profile: 'monthly',
+        hasActivePlan: true,
+        planNameKey: 'billing.monthly_pro_title',
+        remainingQuota: 42,
+        expiresAt: '2026-04-30T23:59:00',
+        billingOptionId: 'monthly_pro'
+    }
+};
+
+export const getMockUserEntitlement = () => {
+    const profile = localStorage.getItem('mockBillingProfile') || 'none';
+    return USER_ENTITLEMENTS[profile] || USER_ENTITLEMENTS.none;
+};
+
+export const setMockUserEntitlement = (profile) => {
+    localStorage.setItem('mockBillingProfile', profile);
+    return USER_ENTITLEMENTS[profile] || USER_ENTITLEMENTS.none;
+};
+
+export const getBillingOption = (id) => BILLING_OPTIONS.find(option => option.id === id) || BILLING_OPTIONS[0];
+
 export const SWAP_SUMMARY = {
     stationNameKey: 'mock_station.name',
     stationAddressKey: 'mock_station.address',
