@@ -61,7 +61,7 @@ const PackageCard = ({ option, isSelected, onSelect, t }) => (
             )}
         </div>
 
-        {option.type === 'pay_per_swap' ? (
+        {option.group === 'per_swap' ? (
             <ThunderboltFilled style={{ fontSize: '26px', color: isSelected ? '#10b981' : '#cbd5e1' }} />
         ) : (
             <CalendarOutlined style={{ fontSize: '26px', color: isSelected ? '#10b981' : '#cbd5e1' }} />
@@ -78,6 +78,9 @@ const PackageCard = ({ option, isSelected, onSelect, t }) => (
         </Text>
         <Text type="secondary" style={{ fontSize: '12px' }}>
             {t(option.quotaLabelKey)}
+        </Text>
+        <Text type="secondary" style={{ fontSize: '12px' }}>
+            {t('billing.validity_days', { count: option.validityDays })}
         </Text>
     </div>
 );
@@ -98,8 +101,8 @@ const Screen11 = () => {
     }, [navigate, t]);
 
     const packageGroups = useMemo(() => ({
-        perSwap: BILLING_OPTIONS.filter(option => option.type === 'pay_per_swap'),
-        pass: BILLING_OPTIONS.filter(option => option.type !== 'pay_per_swap')
+        perSwap: BILLING_OPTIONS.filter(option => option.group === 'per_swap'),
+        pass: BILLING_OPTIONS.filter(option => option.group === 'pass')
     }), []);
 
     const selectedOption = selectedBillingId ? getBillingOption(selectedBillingId) : null;

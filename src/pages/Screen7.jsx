@@ -52,7 +52,7 @@ const Screen6 = () => {
         chargingStartDate: SWAP_SUMMARY.startedAt,
         chargingEndDate: SWAP_SUMMARY.completedAt,
     };
-    const activeBillingOptionId = localStorage.getItem('activeBillingOptionId') || 'pay_per_swap';
+    const activeBillingOptionId = localStorage.getItem('activeBillingOptionId') || 'swap_5_30d';
     const activeBilling = getBillingOption(activeBillingOptionId);
     const activeBillingLabel = t(activeBilling.titleKey);
     const activeBillingQuota = t(activeBilling.quotaLabelKey);

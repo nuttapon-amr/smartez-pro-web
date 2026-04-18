@@ -34,7 +34,7 @@ const Screen9 = () => {
         ...SWAP_RECEIPT,
         purchasedDuration: t('screen6.mock_purchased_duration')
     };
-    const activeBillingOptionId = localStorage.getItem('activeBillingOptionId') || 'pay_per_swap';
+    const activeBillingOptionId = localStorage.getItem('activeBillingOptionId') || 'swap_5_30d';
     const activeBilling = getBillingOption(activeBillingOptionId);
     const activeBillingLabel = t(activeBilling.titleKey);
     const activeBillingQuota = t(activeBilling.quotaLabelKey);

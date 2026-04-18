@@ -33,39 +33,95 @@ export const SWAP_CABINETS = {
 
 export const BILLING_OPTIONS = [
     {
-        id: 'pay_per_swap',
-        type: 'pay_per_swap',
-        titleKey: 'billing.pay_per_swap_title',
-        descriptionKey: 'billing.pay_per_swap_desc',
-        price: 45,
-        quotaLabelKey: 'billing.one_swap',
+        id: 'swap_5_30d',
+        group: 'per_swap',
+        type: 'swap_quota',
+        titleKey: 'billing.swap_5_title',
+        descriptionKey: 'billing.swap_5_desc',
+        price: 220,
+        swapQuota: 5,
+        validityDays: 30,
+        quotaLabelKey: 'billing.swap_5_quota',
         badgeKey: null
     },
     {
-        id: 'daily_pass',
-        type: 'daily_pass',
-        titleKey: 'billing.daily_pass_title',
-        descriptionKey: 'billing.daily_pass_desc',
-        price: 99,
-        quotaLabelKey: 'billing.daily_quota',
+        id: 'swap_10_30d',
+        group: 'per_swap',
+        type: 'swap_quota',
+        titleKey: 'billing.swap_10_title',
+        descriptionKey: 'billing.swap_10_desc',
+        price: 420,
+        swapQuota: 10,
+        validityDays: 30,
+        quotaLabelKey: 'billing.swap_10_quota',
         badgeKey: 'billing.popular'
     },
     {
-        id: 'monthly_basic',
-        type: 'monthly_subscription',
-        titleKey: 'billing.monthly_basic_title',
-        descriptionKey: 'billing.monthly_basic_desc',
-        price: 899,
-        quotaLabelKey: 'billing.monthly_basic_quota',
+        id: 'swap_20_30d',
+        group: 'per_swap',
+        type: 'swap_quota',
+        titleKey: 'billing.swap_20_title',
+        descriptionKey: 'billing.swap_20_desc',
+        price: 790,
+        swapQuota: 20,
+        validityDays: 30,
+        quotaLabelKey: 'billing.swap_20_quota',
         badgeKey: null
     },
     {
-        id: 'monthly_pro',
-        type: 'monthly_subscription',
-        titleKey: 'billing.monthly_pro_title',
-        descriptionKey: 'billing.monthly_pro_desc',
-        price: 1299,
-        quotaLabelKey: 'billing.monthly_pro_quota',
+        id: 'swap_40_30d',
+        group: 'per_swap',
+        type: 'swap_quota',
+        titleKey: 'billing.swap_40_title',
+        descriptionKey: 'billing.swap_40_desc',
+        price: 1490,
+        swapQuota: 40,
+        validityDays: 30,
+        quotaLabelKey: 'billing.swap_40_quota',
+        badgeKey: 'billing.best_value'
+    },
+    {
+        id: 'pass_1d',
+        group: 'pass',
+        type: 'time_pass',
+        titleKey: 'billing.pass_1d_title',
+        descriptionKey: 'billing.pass_1d_desc',
+        price: 99,
+        validityDays: 1,
+        quotaLabelKey: 'billing.pass_1d_quota',
+        badgeKey: null
+    },
+    {
+        id: 'pass_7d',
+        group: 'pass',
+        type: 'time_pass',
+        titleKey: 'billing.pass_7d_title',
+        descriptionKey: 'billing.pass_7d_desc',
+        price: 590,
+        validityDays: 7,
+        quotaLabelKey: 'billing.pass_7d_quota',
+        badgeKey: 'billing.popular'
+    },
+    {
+        id: 'pass_15d',
+        group: 'pass',
+        type: 'time_pass',
+        titleKey: 'billing.pass_15d_title',
+        descriptionKey: 'billing.pass_15d_desc',
+        price: 1090,
+        validityDays: 15,
+        quotaLabelKey: 'billing.pass_15d_quota',
+        badgeKey: null
+    },
+    {
+        id: 'pass_30d',
+        group: 'pass',
+        type: 'time_pass',
+        titleKey: 'billing.pass_30d_title',
+        descriptionKey: 'billing.pass_30d_desc',
+        price: 1990,
+        validityDays: 30,
+        quotaLabelKey: 'billing.pass_30d_quota',
         badgeKey: 'billing.best_value'
     }
 ];
@@ -82,18 +138,26 @@ export const USER_ENTITLEMENTS = {
     daily: {
         profile: 'daily',
         hasActivePlan: true,
-        planNameKey: 'billing.daily_pass_title',
+        planNameKey: 'billing.pass_1d_title',
         remainingQuota: 4,
         expiresAt: '2026-04-18T23:59:00',
-        billingOptionId: 'daily_pass'
+        billingOptionId: 'pass_1d'
     },
     monthly: {
         profile: 'monthly',
         hasActivePlan: true,
-        planNameKey: 'billing.monthly_pro_title',
+        planNameKey: 'billing.pass_30d_title',
         remainingQuota: 42,
         expiresAt: '2026-04-30T23:59:00',
-        billingOptionId: 'monthly_pro'
+        billingOptionId: 'pass_30d'
+    },
+    quota: {
+        profile: 'quota',
+        hasActivePlan: true,
+        planNameKey: 'billing.swap_20_title',
+        remainingQuota: 20,
+        expiresAt: '2026-05-18T23:59:00',
+        billingOptionId: 'swap_20_30d'
     }
 };
 

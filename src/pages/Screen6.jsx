@@ -106,7 +106,7 @@ const Screen5 = () => {
 
     const stationName = i18n.language === 'th' ? MOCK_SWAP.stationNameTh : MOCK_SWAP.stationNameEn;
     const stationAddress = i18n.language === 'th' ? MOCK_SWAP.stationAddressTh : MOCK_SWAP.stationAddressEn;
-    const activeBillingOptionId = localStorage.getItem('activeBillingOptionId') || 'pay_per_swap';
+    const activeBillingOptionId = localStorage.getItem('activeBillingOptionId') || 'swap_5_30d';
     const activeBilling = getBillingOption(activeBillingOptionId);
     const activeBillingLabel = t(activeBilling.titleKey);
     const activeBillingQuota = t(activeBilling.quotaLabelKey);

@@ -22,7 +22,7 @@ const Screen4 = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [uploading, setUploading] = useState(false);
 
-    const billingOptionId = location.state?.billingOptionId || 'pay_per_swap';
+    const billingOptionId = location.state?.billingOptionId || 'swap_5_30d';
     const selectedBilling = getBillingOption(billingOptionId);
     const amountToPay = location.state?.price ?? selectedBilling.price;
     const packageLabel = location.state?.packageLabel || t(selectedBilling.titleKey);
@@ -59,9 +59,11 @@ const Screen4 = () => {
 
             if (isSuccess) {
                 message.success(t('payment.success_slip'));
-                if (selectedBilling.id === 'daily_pass') {
+                if (selectedBilling.group === 'per_swap') {
+                    setMockUserEntitlement('quota');
+                } else if (selectedBilling.id === 'pass_1d') {
                     setMockUserEntitlement('daily');
-                } else if (selectedBilling.type === 'monthly_subscription') {
+                } else if (selectedBilling.group === 'pass') {
                     setMockUserEntitlement('monthly');
                 }
                 localStorage.setItem('activeSwapSession', 'true');
