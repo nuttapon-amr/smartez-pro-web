@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Typography, Modal, Spin, Space, Divider, Card, Tag } from 'antd';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Button, Card, Modal, Space, Spin, Steps, Tag, Typography } from 'antd';
 import {
     CheckCircleFilled,
     ClockCircleOutlined,
     CustomerServiceFilled,
-    EnvironmentFilled,
-    InfoCircleFilled,
+    LoadingOutlined,
     MessageOutlined,
     PhoneOutlined,
     ThunderboltFilled
@@ -15,44 +14,88 @@ import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
 import useSwapSession from '../hooks/useSwapSession';
 import { useTranslation } from 'react-i18next';
-import { getBillingOption } from '../data/mockSwapData';
 
 const { Title, Text } = Typography;
 
 const MOCK_SWAP = {
     swapId: 'SWP-2026-000142',
-    stationNameTh: 'AMR Swap Station Bang Na',
-    stationNameEn: 'AMR Swap Station Bang Na',
-    stationAddressTh: '123/45 ถนนบางนา-ตราด แขวงบางนา เขตบางนา กรุงเทพมหานคร 10260',
-    stationAddressEn: '123/45 Bang Na-Trat Road, Bang Na, Bangkok 10260',
     cabinetCode: 'SWAP-BN-004',
     batteryModel: 'AMR-M2 72V',
     returnSlot: '02',
     pickupSlot: '04',
-    returnedBatteryId: 'BAT-OLD-9182',
     pickupBatteryId: 'BAT-FULL-2048',
     pickupBatterySoc: 96,
-    fullBatteries: 8,
-    serviceTime: '00:02:40',
-    status: 'waiting_return'
+    fullBatteries: 8
 };
 
-const Screen5 = () => {
+const FLOW_STEPS = ['connecting', 'return_open', 'verifying_return', 'pickup_ready'];
+
+const Screen6 = () => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const { hasActiveSwap, isLoading, completeSwap } = useSwapSession();
-    const [swapStatus, setSwapStatus] = useState(MOCK_SWAP.status);
-    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [swapStep, setSwapStep] = useState('connecting');
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-    const [isStationInfoVisible, setIsStationInfoVisible] = useState(false);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
     useEffect(() => {
         document.title = `${t('screen5.title')} | AMR Battery Swap`;
     }, [t]);
 
-    const isWaitingReturn = swapStatus === 'waiting_return';
+    useEffect(() => {
+        if (swapStep !== 'connecting') return undefined;
+        const timer = setTimeout(() => setSwapStep('return_open'), 1400);
+        return () => clearTimeout(timer);
+    }, [swapStep]);
+
+    useEffect(() => {
+        if (swapStep !== 'verifying_return') return undefined;
+        const timer = setTimeout(() => setSwapStep('pickup_ready'), 1600);
+        return () => clearTimeout(timer);
+    }, [swapStep]);
+
+    const currentStepIndex = Math.max(0, FLOW_STEPS.indexOf(swapStep));
+
+    const steps = useMemo(() => ([
+        { title: t('screen5.step_connecting') },
+        { title: t('screen5.step_return_instruction') },
+        { title: t('screen5.step_verify_return') },
+        { title: t('screen5.step_pickup_instruction') }
+    ]), [t]);
+
+    const screenCopy = {
+        connecting: {
+            status: t('screen5.status_connecting'),
+            title: t('screen5.connecting_title'),
+            desc: t('screen5.connecting_desc'),
+            icon: <div style={{ textAlign: 'center' }}><LoadingOutlined spin style={{ color: '#10b981', fontSize: '42px' }} /><Text type="secondary" style={{ display: 'block', marginTop: '10px', fontSize: '12px', fontWeight: 700 }}>{t('screen5.connecting_spinner')}</Text></div>,
+            accent: '#10b981'
+        },
+        return_open: {
+            status: t('screen5.status_return_open'),
+            title: t('screen5.return_instruction_title', { slot: MOCK_SWAP.returnSlot }),
+            desc: t('screen5.return_instruction_desc', { slot: MOCK_SWAP.returnSlot }),
+            icon: <ThunderboltFilled style={{ color: '#f59e0b', fontSize: '42px' }} />,
+            accent: '#f59e0b'
+        },
+        verifying_return: {
+            status: t('screen5.status_verifying'),
+            title: t('screen5.verifying_return_title'),
+            desc: t('screen5.verifying_return_desc'),
+            icon: <div style={{ textAlign: 'center' }}><LoadingOutlined spin style={{ color: '#3b82f6', fontSize: '42px' }} /><Text type="secondary" style={{ display: 'block', marginTop: '10px', fontSize: '12px', fontWeight: 700 }}>{t('screen5.verifying_spinner')}</Text></div>,
+            accent: '#3b82f6'
+        },
+        pickup_ready: {
+            status: t('screen5.status_pickup_ready'),
+            title: t('screen5.pickup_instruction_title', { slot: MOCK_SWAP.pickupSlot }),
+            desc: t('screen5.pickup_instruction_desc', { slot: MOCK_SWAP.pickupSlot, batteryId: MOCK_SWAP.pickupBatteryId }),
+            icon: <CheckCircleFilled style={{ color: '#10b981', fontSize: '42px' }} />,
+            accent: '#10b981'
+        }
+    }[swapStep];
+
     const handleReturnConfirmed = () => {
-        setSwapStatus('pickup_ready');
+        setSwapStep('verifying_return');
     };
 
     const handlePickupConfirm = () => {
@@ -62,8 +105,12 @@ const Screen5 = () => {
 
     if (isLoading) {
         return (
-            <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '16px', textAlign: 'center', padding: '24px' }}>
                 <Spin size="large" />
+                <div>
+                    <Text strong style={{ display: 'block', fontSize: '16px', color: '#0f172a' }}>{t('screen5.loading_swap_title')}</Text>
+                    <Text type="secondary" style={{ fontSize: '13px' }}>{t('screen5.loading_swap_desc')}</Text>
+                </div>
             </div>
         );
     }
@@ -78,7 +125,6 @@ const Screen5 = () => {
                             onClick={() => i18n.changeLanguage(i18n.language === 'th' ? 'en' : 'th')}
                             style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'white', borderRadius: '12px', padding: '4px 12px', height: 'auto', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
                         >
-                            <span style={{ fontSize: '18px' }}>{i18n.language === 'th' ? '🇹🇭' : '🇬🇧'}</span>
                             <Text strong style={{ fontSize: '13px', color: '#1f2937' }}>{i18n.language === 'th' ? 'TH' : 'EN'}</Text>
                         </Button>
                     </div>
@@ -93,7 +139,7 @@ const Screen5 = () => {
                             type="primary"
                             size="large"
                             icon={<ClockCircleOutlined />}
-                            onClick={() => navigate('/screen8')}
+                            onClick={() => navigate('/screen9')}
                             style={{ height: '56px', borderRadius: '16px', backgroundColor: '#10b981', fontWeight: '700', padding: '0 32px', boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)' }}
                         >
                             {t('screen5.go_to_history')}
@@ -104,115 +150,73 @@ const Screen5 = () => {
         );
     }
 
-    const stationName = i18n.language === 'th' ? MOCK_SWAP.stationNameTh : MOCK_SWAP.stationNameEn;
-    const stationAddress = i18n.language === 'th' ? MOCK_SWAP.stationAddressTh : MOCK_SWAP.stationAddressEn;
-    const activeBillingOptionId = localStorage.getItem('activeBillingOptionId') || 'swap_5_30d';
-    const activeBilling = getBillingOption(activeBillingOptionId);
-    const activeBillingLabel = t(activeBilling.titleKey);
-    const activeBillingQuota = t(activeBilling.quotaLabelKey);
-    const steps = [
-        { label: t('screen5.step_payment_done'), done: true },
-        { label: t('screen5.step_return_opened'), done: true },
-        { label: isWaitingReturn ? t('screen5.step_wait_return') : t('screen5.step_return_checked'), done: !isWaitingReturn, active: isWaitingReturn },
-        { label: t('screen5.step_pickup_opened'), done: !isWaitingReturn, active: !isWaitingReturn },
-        { label: t('screen5.step_pickup_confirm'), done: false }
-    ];
-
     return (
         <MobileLayout>
             <div style={{ background: '#f8fafc', minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Header title={t('screen5.title')} />
 
-                <div style={{ padding: '14px 20px 24px 20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
-                        <div style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            background: isWaitingReturn ? '#fff7ed' : '#ecfdf5',
-                            padding: '6px 12px',
-                            borderRadius: '20px',
-                            color: isWaitingReturn ? '#ea580c' : '#10b981',
-                            fontSize: '11px',
-                            fontWeight: '700',
-                            border: isWaitingReturn ? '1px solid #ffedd5' : '1px solid #bbf7d0'
-                        }}>
-                            <span style={{ width: '6px', height: '6px', background: isWaitingReturn ? '#ea580c' : '#10b981', borderRadius: '50%' }} />
-                            {isWaitingReturn ? t('screen5.status_suspended') : t('screen5.status_charging')}
-                        </div>
-
-                        <div style={{ display: 'inline-flex', alignItems: 'center', background: '#1e293b', padding: '6px 12px', borderRadius: '20px', color: 'white', fontSize: '11px', fontWeight: '700' }}>
-                            {MOCK_SWAP.batteryModel}
-                        </div>
-
-                        <Tag color="green" style={{ margin: 0, borderRadius: '20px', padding: '4px 10px', fontSize: '11px', fontWeight: 700 }}>
-                            {activeBillingLabel}
+                <div style={{ padding: '16px 20px 24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+                        <Tag color="blue" style={{ margin: 0, borderRadius: '999px', padding: '4px 10px', fontWeight: 700 }}>
+                            {MOCK_SWAP.cabinetCode}
                         </Tag>
+                    </div>
 
-                        <Button
-                            type="text"
-                            icon={<InfoCircleFilled style={{ color: '#3b82f6', fontSize: '18px' }} />}
-                            onClick={() => setIsStationInfoVisible(true)}
-                            style={{ padding: '4px', height: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'white', borderRadius: '50%', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9' }}
+                    <Card style={{ borderRadius: '24px', border: '1px solid #E2E8F0', marginBottom: '16px' }} styles={{ body: { padding: '18px' } }}>
+                        <Steps
+                            direction="vertical"
+                            size="small"
+                            current={currentStepIndex}
+                            items={steps}
                         />
-                    </div>
+                    </Card>
 
-                    <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                        <div style={{ width: '180px', height: '180px', margin: '0 auto 18px auto', borderRadius: '40px', background: 'linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%)', border: '1px solid #d1fae5', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', boxShadow: '0 18px 40px rgba(16, 185, 129, 0.12)' }}>
-                            <ThunderboltFilled style={{ color: '#10b981', fontSize: '42px', marginBottom: '12px' }} />
-                            <Title level={1} style={{ margin: 0, color: '#0f172a', lineHeight: 1 }}>{MOCK_SWAP.pickupBatterySoc}<span style={{ fontSize: '22px' }}>%</span></Title>
-                            <Text type="secondary" style={{ fontSize: '12px', fontWeight: 700 }}>{t('screen5.energy_delivered')}</Text>
-                        </div>
-                        <Title level={4} style={{ margin: '0 0 6px 0', color: '#0f172a' }}>
-                            {isWaitingReturn
-                                ? t('screen5.return_slot_title', { slot: MOCK_SWAP.returnSlot })
-                                : t('screen5.pickup_slot_title', { slot: MOCK_SWAP.pickupSlot })}
-                        </Title>
-                        <Text type="secondary" style={{ fontSize: '13px' }}>
-                            {isWaitingReturn
-                                ? t('screen5.charger_stopped_check')
-                                : t('screen5.pickup_slot_desc', { slot: MOCK_SWAP.pickupSlot, batteryId: MOCK_SWAP.pickupBatteryId })}
-                        </Text>
-                    </div>
-
-                    <Card style={{ borderRadius: '22px', border: '1px solid #e2e8f0', marginBottom: '18px' }} styles={{ body: { padding: '18px' } }}>
-                        <Space direction="vertical" size={14} style={{ width: '100%' }}>
-                            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '16px', padding: '12px', display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
-                                <div>
-                                    <Text type="secondary" style={{ display: 'block', fontSize: '11px', fontWeight: 700 }}>{t('billing.your_plan')}</Text>
-                                    <Text strong style={{ fontSize: '14px', color: '#047857' }}>{activeBillingLabel}</Text>
-                                </div>
-                                <Text type="secondary" style={{ fontSize: '12px', textAlign: 'right' }}>{activeBillingQuota}</Text>
+                    <Card style={{ borderRadius: '28px', border: '1px solid #D1FAE5', boxShadow: '0 18px 44px rgba(16, 185, 129, 0.12)', marginBottom: '16px' }} styles={{ body: { padding: '24px 20px' } }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ width: '132px', height: '132px', borderRadius: '36px', background: '#ECFDF5', border: `1px solid ${screenCopy.accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
+                                {screenCopy.icon}
                             </div>
-                            {steps.map((step, index) => (
-                                <div key={step.label} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                    <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: step.done ? '#10b981' : step.active ? '#f59e0b' : '#e2e8f0', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '12px', fontWeight: 800 }}>
-                                        {step.done ? <CheckCircleFilled /> : index + 1}
-                                    </div>
-                                    <Text strong={step.active} style={{ fontSize: '14px', color: step.active ? '#0f172a' : '#64748b' }}>{step.label}</Text>
-                                </div>
-                            ))}
+                            <Tag color={swapStep === 'return_open' ? 'warning' : swapStep === 'pickup_ready' ? 'success' : 'processing'} style={{ borderRadius: '999px', marginBottom: '12px', fontWeight: 700 }}>
+                                {screenCopy.status}
+                            </Tag>
+                            <Title level={4} style={{ margin: '0 0 8px', color: '#0f172a' }}>
+                                {screenCopy.title}
+                            </Title>
+                            <Text type="secondary" style={{ display: 'block', fontSize: '14px', lineHeight: 1.55 }}>
+                                {screenCopy.desc}
+                            </Text>
+                        </div>
+                    </Card>
+
+                    <Card style={{ borderRadius: '20px', border: '1px solid #E2E8F0', marginBottom: '16px' }} styles={{ body: { padding: '16px' } }}>
+                        <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                            <InfoRow label={t('screen5.return_slot')} value={MOCK_SWAP.returnSlot} highlight={swapStep === 'return_open'} />
+                            <InfoRow label={t('screen5.pickup_slot')} value={MOCK_SWAP.pickupSlot} highlight={swapStep === 'pickup_ready'} />
+                            <InfoRow label={t('screen6.connector_type')} value={MOCK_SWAP.batteryModel} />
                         </Space>
                     </Card>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '18px' }}>
-                        <Stat label={t('screen5.current_power')} value={MOCK_SWAP.fullBatteries} unit={t('charging.unit_swap')} />
-                        <Stat label={t('screen5.elapsed_time')} value={MOCK_SWAP.serviceTime} />
-                    </div>
-
-                    <div style={{ marginTop: 'auto', paddingTop: '18px' }}>
-                        {isWaitingReturn ? (
+                    <div style={{ marginTop: 'auto', paddingTop: '12px' }}>
+                        {swapStep === 'return_open' && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <Button type="primary" size="large" block icon={<CheckCircleFilled />} style={{ height: '60px', borderRadius: '18px', fontWeight: '800', fontSize: '16px', backgroundColor: '#10b981', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.25)' }} onClick={handleReturnConfirmed}>
-                                    {t('screen5.resume_confirm_title')}
+                                <Button type="primary" size="large" block icon={<CheckCircleFilled />} style={{ height: '60px', borderRadius: '18px', fontWeight: 800, fontSize: '16px', backgroundColor: '#10b981', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.25)' }} onClick={handleReturnConfirmed}>
+                                    {t('screen5.confirm_return_button')}
                                 </Button>
-                                <Button size="large" block icon={<CustomerServiceFilled />} style={{ height: '56px', borderRadius: '18px', fontWeight: '700', fontSize: '16px', color: '#475569', borderColor: '#cbd5e1' }} onClick={() => setIsContactModalOpen(true)}>
+                                <Button size="large" block icon={<CustomerServiceFilled />} style={{ height: '56px', borderRadius: '18px', fontWeight: 700, fontSize: '16px', color: '#475569', borderColor: '#cbd5e1' }} onClick={() => setIsContactModalOpen(true)}>
                                     {t('screen5.contact_support')}
                                 </Button>
                             </div>
-                        ) : (
-                            <Button type="primary" size="large" block style={{ height: '64px', borderRadius: '20px', fontWeight: '800', fontSize: '18px', backgroundColor: '#10b981', border: 'none', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.25)' }} onClick={() => setIsConfirmModalOpen(true)}>
-                                {t('screen5.stop_button')}
+                        )}
+
+                        {swapStep === 'pickup_ready' && (
+                            <Button type="primary" size="large" block style={{ height: '64px', borderRadius: '20px', fontWeight: 800, fontSize: '18px', backgroundColor: '#10b981', border: 'none', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.25)' }} onClick={() => setIsConfirmModalOpen(true)}>
+                                {t('screen5.confirm_pickup_button')}
+                            </Button>
+                        )}
+
+                        {(swapStep === 'connecting' || swapStep === 'verifying_return') && (
+                            <Button size="large" block disabled style={{ height: '60px', borderRadius: '18px', fontWeight: 800, fontSize: '16px' }}>
+                                {swapStep === 'connecting' ? t('screen5.connecting_button') : t('screen5.verifying_button')}
                             </Button>
                         )}
                     </div>
@@ -225,7 +229,7 @@ const Screen5 = () => {
                         </div>
                         <Title level={4} style={{ margin: '0 0 12px 0' }}>{t('screen5.stop_confirm_title')}</Title>
                         <Text type="secondary" style={{ display: 'block', marginBottom: '32px', fontSize: '14px' }}>{t('screen5.stop_confirm_desc')}</Text>
-                        <Button type="primary" size="large" block style={{ height: '52px', borderRadius: '14px', fontWeight: '700', backgroundColor: '#10b981' }} onClick={handlePickupConfirm}>
+                        <Button type="primary" size="large" block style={{ height: '52px', borderRadius: '14px', fontWeight: 700, backgroundColor: '#10b981' }} onClick={handlePickupConfirm}>
                             {t('common.confirm')}
                         </Button>
                     </div>
@@ -234,54 +238,29 @@ const Screen5 = () => {
                 <Modal title={<Title level={4} style={{ margin: 0, textAlign: 'center' }}>{t('screen5.contact_support')}</Title>} open={isContactModalOpen} onCancel={() => setIsContactModalOpen(false)} footer={null} centered width={320} styles={{ body: { padding: '24px' } }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '10px' }}>
                         <a href="tel:021234567" style={{ textDecoration: 'none' }}>
-                            <Button block size="large" style={{ height: '60px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '20px', paddingRight: '20px', fontSize: '16px', fontWeight: '600' }}>
+                            <Button block size="large" style={{ height: '60px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '20px', paddingRight: '20px', fontSize: '16px', fontWeight: 600 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><PhoneOutlined style={{ fontSize: '20px', color: '#10b981' }} /><span>02-123-4567</span></div>
                                 <div style={{ background: '#f3f4f6', padding: '4px 8px', borderRadius: '8px', fontSize: '12px', color: '#6b7280' }}>Call</div>
                             </Button>
                         </a>
                         <a href="https://line.me/ti/p/@amr_ev" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                            <Button block size="large" style={{ height: '60px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '20px', paddingRight: '20px', fontSize: '16px', fontWeight: '600', borderColor: '#06c755', color: '#06c755' }}>
+                            <Button block size="large" style={{ height: '60px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '20px', paddingRight: '20px', fontSize: '16px', fontWeight: 600, borderColor: '#06c755', color: '#06c755' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><MessageOutlined style={{ fontSize: '20px' }} /><span>@amr_swap</span></div>
                                 <div style={{ background: '#dcfce7', padding: '4px 8px', borderRadius: '8px', fontSize: '12px', color: '#15803d' }}>Line</div>
                             </Button>
                         </a>
                     </div>
                 </Modal>
-
-                <Modal title={<Title level={4} style={{ margin: 0 }}>{t('screen1.station_label')}</Title>} open={isStationInfoVisible} onCancel={() => setIsStationInfoVisible(false)} footer={<Button type="primary" onClick={() => setIsStationInfoVisible(false)} style={{ borderRadius: '12px', background: '#10b981', borderColor: '#10b981' }}>{t('common.close')}</Button>} centered styles={{ body: { padding: '24px' } }}>
-                    <Space direction="vertical" size={18} style={{ width: '100%' }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-                            <div style={{ padding: '10px', backgroundColor: '#ecfdf5', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <EnvironmentFilled style={{ color: '#10b981', fontSize: '20px' }} />
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <Title level={5} style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 700 }}>{stationName}</Title>
-                                <Text type="secondary" style={{ fontSize: '14px', lineHeight: '1.5', display: 'block' }}>{stationAddress}</Text>
-                            </div>
-                        </div>
-                        <Divider style={{ margin: 0 }} />
-                        <InfoRow label={t('screen6.charger_id')} value={MOCK_SWAP.cabinetCode} />
-                        <InfoRow label={t('screen6.connector_type')} value={MOCK_SWAP.batteryModel} />
-                        <InfoRow label={t('screen5.return_pickup_label')} value={`${MOCK_SWAP.returnSlot} / ${MOCK_SWAP.pickupSlot}`} />
-                    </Space>
-                </Modal>
             </div>
         </MobileLayout>
     );
 };
 
-const Stat = ({ label, value, unit }) => (
-    <div style={{ background: 'white', padding: '16px', borderRadius: '18px', border: '1px solid #f1f5f9' }}>
-        <Text type="secondary" style={{ fontSize: '11px', fontWeight: 700, display: 'block', marginBottom: '6px' }}>{label}</Text>
-        <Text strong style={{ fontSize: '20px', color: '#0f172a' }}>{value} {unit && <span style={{ fontSize: '12px', color: '#94a3b8' }}>{unit}</span>}</Text>
+const InfoRow = ({ label, value, highlight }) => (
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center', background: highlight ? '#ECFDF5' : '#F8FAFC', border: highlight ? '1px solid #BBF7D0' : '1px solid #F1F5F9', borderRadius: '14px', padding: '12px' }}>
+        <Text type="secondary" style={{ fontSize: '12px', fontWeight: 700 }}>{label}</Text>
+        <Text strong style={{ fontSize: '16px', color: highlight ? '#047857' : '#0f172a', textAlign: 'right' }}>{value}</Text>
     </div>
 );
 
-const InfoRow = ({ label, value }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-        <Text type="secondary" style={{ fontSize: '13px' }}>{label}</Text>
-        <Text strong style={{ fontSize: '14px', textAlign: 'right' }}>{value}</Text>
-    </div>
-);
-
-export default Screen5;
+export default Screen6;

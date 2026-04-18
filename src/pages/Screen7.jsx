@@ -7,8 +7,7 @@ import {
     CheckCircleFilled,
     EnvironmentFilled,
     CalendarFilled,
-    TagFilled,
-    FileTextOutlined
+    TagFilled
 } from '@ant-design/icons';
 import MobileLayout from '../components/MobileLayout';
 import Header from '../components/Header';
@@ -292,23 +291,6 @@ const Screen6 = () => {
 
                 <div style={{ marginTop: 'auto', paddingBottom: '10px' }}>
                     <Button
-                        size="large"
-                        block
-                        icon={<FileTextOutlined />}
-                        style={{
-                            height: '56px',
-                            borderRadius: '16px',
-                            marginBottom: '12px',
-                            fontWeight: 'bold',
-                            fontSize: '18px',
-                            borderColor: '#d1d5db',
-                            color: '#374151'
-                        }}
-                        onClick={() => navigate('/screen10')}
-                    >
-                        {t('screen6.view_receipt')}
-                    </Button>
-                    <Button
                         type="primary"
                         size="large"
                         block
@@ -324,7 +306,7 @@ const Screen6 = () => {
                             justifyContent: 'center',
                             gap: '8px'
                         }}
-                        onClick={() => navigate('/screen8')}
+                        onClick={() => navigate('/screen9')}
                     >
                         {t('common.ok')}
                     </Button>

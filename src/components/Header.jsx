@@ -4,7 +4,7 @@ import {
     LeftOutlined,
     MoreOutlined,
     HistoryOutlined,
-    ThunderboltOutlined,
+    GiftOutlined,
     LogoutOutlined,
     ExclamationCircleOutlined
 } from '@ant-design/icons';
@@ -88,27 +88,27 @@ const Header = ({ title, showMenu = true }) => {
                     justifyContent: 'flex-start',
                     paddingLeft: '12px',
                     height: '40px',
-                    backgroundColor: location.pathname === '/screen8' || location.pathname === '/screen9' ? '#fee2e2' : 'transparent',
-                    color: location.pathname === '/screen8' || location.pathname === '/screen9' ? '#EF4444' : 'rgba(0, 0, 0, 0.85)',
-                    fontWeight: location.pathname === '/screen8' || location.pathname === '/screen9' ? '600' : 'normal'
+                    backgroundColor: location.pathname === '/screen9' ? '#fee2e2' : 'transparent',
+                    color: location.pathname === '/screen9' ? '#EF4444' : 'rgba(0, 0, 0, 0.85)',
+                    fontWeight: location.pathname === '/screen9' ? '600' : 'normal'
                 }}
-                onClick={() => handleNavigate('/screen8')}
+                onClick={() => handleNavigate('/screen9')}
             >
                 {t('common.history')}
             </Button>
             <Button
                 type="text"
-                icon={<ThunderboltOutlined />}
+                icon={<GiftOutlined />}
                 style={{
                     textAlign: 'left',
                     justifyContent: 'flex-start',
                     paddingLeft: '12px',
                     height: '40px',
-                    backgroundColor: location.pathname === '/screen6' ? '#fee2e2' : 'transparent',
-                    color: location.pathname === '/screen6' ? '#EF4444' : 'rgba(0, 0, 0, 0.85)',
-                    fontWeight: location.pathname === '/screen6' ? '600' : 'normal'
+                    backgroundColor: location.pathname === '/screen8' ? '#fee2e2' : 'transparent',
+                    color: location.pathname === '/screen8' ? '#EF4444' : 'rgba(0, 0, 0, 0.85)',
+                    fontWeight: location.pathname === '/screen8' ? '600' : 'normal'
                 }}
-                onClick={() => handleNavigate('/screen6')}
+                onClick={() => handleNavigate('/screen8')}
             >
                 {t('common.charging')}
             </Button>
