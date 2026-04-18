@@ -114,26 +114,25 @@ const Screen4 = () => {
                                 <Text type="secondary" style={{ fontSize: '12px' }}>{t('billing.payment_required')}</Text>
                             )}
                         </div>
-                        <Tag color={entitlement.hasActivePlan ? 'success' : 'default'} style={{ margin: 0, borderRadius: '999px', fontWeight: 700 }}>
-                            {entitlement.hasActivePlan ? t('billing.no_payment_required') : t('billing.payment_required')}
-                        </Tag>
                     </div>
 
-                    <Button
-                        block
-                        icon={<ShoppingCartOutlined />}
-                        onClick={goToPackages}
-                        style={{
-                            height: '46px',
-                            borderRadius: '14px',
-                            borderColor: '#10b981',
-                            color: entitlement.hasActivePlan ? '#047857' : '#ffffff',
-                            background: entitlement.hasActivePlan ? '#ffffff' : '#10b981',
-                            fontWeight: 800
-                        }}
-                    >
-                        {t('billing.choose_plan')}
-                    </Button>
+                    {!entitlement.hasActivePlan && (
+                        <Button
+                            block
+                            icon={<ShoppingCartOutlined />}
+                            onClick={goToPackages}
+                            style={{
+                                height: '46px',
+                                borderRadius: '14px',
+                                borderColor: '#10b981',
+                                color: '#ffffff',
+                                background: '#10b981',
+                                fontWeight: 800
+                            }}
+                        >
+                            {t('billing.choose_plan')}
+                        </Button>
+                    )}
                 </Card>
 
                 <Card style={{ borderRadius: '24px', border: '1px solid #D1FAE5', boxShadow: '0 12px 30px rgba(16,185,129,0.10)' }} styles={{ body: { padding: '22px' } }}>
@@ -193,23 +192,25 @@ const Screen4 = () => {
                             {t('billing.start_swap')}
                         </Button>
                     )}
-                    <Button
-                        size="large"
-                        block
-                        icon={<ShoppingCartOutlined />}
-                        onClick={goToPackages}
-                        style={{
-                            height: '58px',
-                            borderRadius: '20px',
-                            borderColor: entitlement.hasActivePlan ? '#10b981' : '#10b981',
-                            color: entitlement.hasActivePlan ? '#047857' : '#ffffff',
-                            background: entitlement.hasActivePlan ? '#ffffff' : '#10b981',
-                            fontSize: '17px',
-                            fontWeight: 800
-                        }}
-                    >
-                        {t('billing.choose_plan')}
-                    </Button>
+                    {!entitlement.hasActivePlan && (
+                        <Button
+                            size="large"
+                            block
+                            icon={<ShoppingCartOutlined />}
+                            onClick={goToPackages}
+                            style={{
+                                height: '58px',
+                                borderRadius: '20px',
+                                borderColor: '#10b981',
+                                color: '#ffffff',
+                                background: '#10b981',
+                                fontSize: '17px',
+                                fontWeight: 800
+                            }}
+                        >
+                            {t('billing.choose_plan')}
+                        </Button>
+                    )}
                 </div>
             </div>
         </MobileLayout>
