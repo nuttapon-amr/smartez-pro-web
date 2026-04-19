@@ -18,7 +18,13 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/th';
 import locale from 'antd/es/date-picker/locale/th_TH';
 import en_locale from 'antd/es/date-picker/locale/en_US';
-import { SWAP_HISTORY_PREVIOUS, SWAP_HISTORY_TODAY, getMoreSwapHistory } from '../data/mockSwapData';
+import {
+    SWAP_HISTORY_PREVIOUS,
+    SWAP_HISTORY_TODAY,
+    getBillingOption,
+    getMockUserEntitlement,
+    getMoreSwapHistory
+} from '../data/mockSwapData';
 
 const { Title, Text } = Typography;
 
@@ -29,7 +35,6 @@ const HistoryItem = ({
     startTime,
     endTime,
     energy,
-    cost,
     duration,
     purchasedDuration,
     isFeedbackDone,
@@ -92,10 +97,6 @@ const HistoryItem = ({
 
                 <Col span={24}>
                     <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
-                            <Text style={{ fontSize: '12px', fontWeight: '700', color: '#1e293b' }}>{t('history.amount_used')}</Text>
-                            <Text strong style={{ fontSize: '16px', color: '#10b981' }}>฿{cost}</Text>
-                        </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                             <Text type="secondary" style={{ fontSize: '11px' }}>{t('history.purchased_duration')}</Text>
                             <Text strong style={{ fontSize: '12px', color: '#EF4444' }}>{purchasedDuration}</Text>
@@ -181,14 +182,22 @@ const Screen8 = () => {
         dayjs().subtract(1, 'day')
     ]);
 
-    const withPackage = useCallback((items) => items.map(item => ({
-        ...item,
-        purchasedDuration: t('screen6.mock_purchased_duration')
-    })), [t]);
+    const getSelectedSwapPackageLabel = () => {
+        const activeBillingOptionId = localStorage.getItem('activeBillingOptionId');
+        const entitlement = getMockUserEntitlement();
+        const billingOptionId = activeBillingOptionId || entitlement.billingOptionId;
 
-    const [history, setHistory] = useState(() => withPackage(SWAP_HISTORY_PREVIOUS));
+        if (!billingOptionId) return t('billing.no_active_plan');
 
-    const [todaySessions, setTodaySessions] = useState(() => withPackage(SWAP_HISTORY_TODAY));
+        const billingOption = getBillingOption(billingOptionId);
+        return t(billingOption.titleKey);
+    };
+
+    const selectedSwapPackageLabel = getSelectedSwapPackageLabel();
+
+    const [history, setHistory] = useState(() => SWAP_HISTORY_PREVIOUS);
+
+    const [todaySessions, setTodaySessions] = useState(() => SWAP_HISTORY_TODAY);
 
     useEffect(() => {
         document.title = `${t('screen8.title')} | AMR Battery Swap`;
@@ -229,7 +238,7 @@ const Screen8 = () => {
         isFetching.current = true;
 
         setTimeout(() => {
-            const nextBatch = withPackage(getMoreSwapHistory(loadCount));
+            const nextBatch = getMoreSwapHistory(loadCount);
 
             setHistory(prev => [...prev, ...nextBatch]);
             setLoadCount(prev => prev + 1);
@@ -240,7 +249,7 @@ const Screen8 = () => {
                 setHasMore(false);
             }
         }, 800);
-    }, [loadCount, hasMore, withPackage]);
+    }, [loadCount, hasMore]);
     useEffect(() => {
         const observerTarget = loadMoreRef.current;
         const observer = new IntersectionObserver(
@@ -290,6 +299,7 @@ const Screen8 = () => {
                                 <HistoryItem
                                     key={item.id}
                                     {...item}
+                                    purchasedDuration={selectedSwapPackageLabel}
                                     onGiveFeedback={() => handleGiveFeedback(item)}
                                 />
                             ))}
@@ -321,6 +331,7 @@ const Screen8 = () => {
                                 <HistoryItem
                                     key={item.id}
                                     {...item}
+                                    purchasedDuration={selectedSwapPackageLabel}
                                     onGiveFeedback={() => handleGiveFeedback(item)}
                                 />
                             ))}

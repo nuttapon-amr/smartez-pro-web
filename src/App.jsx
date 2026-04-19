@@ -22,7 +22,7 @@ function App() {
       {/* <NavigationBlocker> */}
       <Routes>
         <Route path="/" element={<Navigate to="/screen1" replace />} />
-        <Route path="/screen1" element={<Screen1 />} />
+        <Route path="/screen1" element={<MobileMiddleware><Screen1 /></MobileMiddleware>} />
 
 
         {/* Mobile flow */}

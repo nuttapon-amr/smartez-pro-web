@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Input, Modal, Typography } from 'antd';
 import { LockOutlined, PhoneOutlined } from '@ant-design/icons';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MobileLayout from '../components/MobileLayout';
 import useAuth from '../hooks/useAuth';
@@ -18,7 +18,7 @@ const Screen1 = () => {
     const [mode, setMode] = useState('password');
     const [password, setPassword] = useState('');
 
-    const cabinetId = searchParams.get('cabinetId') || localStorage.getItem('currentCabinetId') || localStorage.getItem('currentChargerId');
+    const cabinetId = searchParams.get('cabinetId');
 
     const getPostAuthTarget = () => {
         return getPostAuthSwapTarget(cabinetId);
@@ -63,6 +63,10 @@ const Screen1 = () => {
         const target = getPostAuthTarget();
         navigate(target.path, { replace: true, state: target.state });
     };
+
+    if (!cabinetId) {
+        return <Navigate to="/404" replace />;
+    }
 
     return (
         <MobileLayout>

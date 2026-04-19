@@ -95,16 +95,6 @@ const Screen4 = () => {
         <MobileLayout>
             <Header title={t('screen1.station_info')} showBack={false} />
             <div style={{ minHeight: '100%', padding: '18px 20px 24px', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%)' }}>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '14px' }}>
-                    <Button
-                        type="text"
-                        onClick={() => i18n.changeLanguage(i18n.language === 'th' ? 'en' : 'th')}
-                        style={{ background: 'rgba(255,255,255,0.85)', borderRadius: '12px', height: 'auto', padding: '4px 12px', fontWeight: 700 }}
-                    >
-                        {i18n.language === 'th' ? 'TH' : 'EN'}
-                    </Button>
-                </div>
-
                 <Card style={{ borderRadius: '22px', border: entitlement.hasActivePlan ? '1px solid #BBF7D0' : '1px solid #E2E8F0', marginBottom: '16px', background: entitlement.hasActivePlan ? '#F0FDF4' : '#FFFFFF' }} styles={{ body: { padding: '18px' } }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start', marginBottom: '14px' }}>
                         <div>

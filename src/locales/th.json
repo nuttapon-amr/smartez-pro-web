@@ -231,7 +231,7 @@
     "history": {
         "amount_used": "ยอดชำระรวม",
         "duration": "เวลาทำรายการ",
-        "purchased_duration": "แพ็กเกจที่ใช้งาน",
+        "purchased_duration": "แพ็กเกจที่ใช้",
         "start_time": "เวลาเริ่มรายการ",
         "end_time": "เวลาสลับสำเร็จ",
         "success": "สำเร็จ",
