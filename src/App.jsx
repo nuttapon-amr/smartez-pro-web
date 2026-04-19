@@ -11,6 +11,7 @@ import Screen9 from './pages/Screen9';
 import Screen10 from './pages/Screen10';
 import Screen11 from './pages/Screen11';
 import Screen3 from './pages/Screen3';
+import LogoutSuccess from './pages/LogoutSuccess';
 import NotFound from './pages/NotFound';
 import MobileMiddleware from './components/MobileMiddleware';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -23,6 +24,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/screen1" replace />} />
         <Route path="/screen1" element={<MobileMiddleware><Screen1 /></MobileMiddleware>} />
+        <Route path="/logout-success" element={<MobileMiddleware><LogoutSuccess /></MobileMiddleware>} />
 
 
         {/* Mobile flow */}

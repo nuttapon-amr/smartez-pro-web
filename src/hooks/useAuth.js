@@ -96,7 +96,7 @@ export const useAuth = () => {
 
     const logout = async () => {
         await authService.logout();
-        navigate('/screen1');
+        navigate('/logout-success', { replace: true });
     };
 
     const proceedToOtp = () => {

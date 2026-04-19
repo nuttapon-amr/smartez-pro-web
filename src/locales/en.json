@@ -331,6 +331,12 @@
         "title": "Confirm Logout",
         "desc": "Are you sure you want to logout?"
     },
+    "logout_success": {
+        "title": "Logged out successfully",
+        "desc": "Usage data on this device has been cleared. To use the service again, please scan the QR Code on the battery swap cabinet.",
+        "scan_again": "Scan QR Code again",
+        "note": "This page cannot continue to login directly because the flow must start from a cabinet QR Code."
+    },
     "charging": {
         "unit_hour": "hr",
         "unit_minute": "min",
