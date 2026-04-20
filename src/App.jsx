@@ -17,12 +17,20 @@ import MobileMiddleware from './components/MobileMiddleware';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import NavigationBlocker from './components/NavigationBlocker';
 
+const RootRedirect = () => {
+  const pageSearchParams = new URLSearchParams(window.location.search);
+  const cabinetId = pageSearchParams.get('cabinetId') || pageSearchParams.get('chargerId');
+  const target = cabinetId ? `/screen1?${pageSearchParams.toString()}` : '/screen1';
+
+  return <Navigate to={target} replace />;
+};
+
 function App() {
   return (
     <HashRouter>
       {/* <NavigationBlocker> */}
       <Routes>
-        <Route path="/" element={<Navigate to="/screen1" replace />} />
+        <Route path="/" element={<RootRedirect />} />
         <Route path="/screen1" element={<MobileMiddleware><Screen1 /></MobileMiddleware>} />
         <Route path="/logout-success" element={<MobileMiddleware><LogoutSuccess /></MobileMiddleware>} />
 
