@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AMR Battery Swap</title>
+  <script>
+    (function () {
+      var basePath = '/smartez-pro-web';
+      var path = window.location.pathname;
+      var routePath = path.indexOf(basePath) === 0 ? path.slice(basePath.length) : path;
+
+      if (!routePath || routePath === '/') {
+        routePath = '/screen1';
+      }
+
+      var target = basePath + '/#' + routePath + window.location.search + window.location.hash;
+      window.location.replace(target);
+    })();
+  </script>
+</head>
+<body></body>
+</html>
