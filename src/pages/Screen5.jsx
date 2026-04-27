@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Button, Typography, Card, Space, Modal, Upload, Spin, message } from 'antd';
+import { Button, Typography, Card, Space, Modal, Spin, message } from 'antd';
 import {
+    CheckCircleFilled,
     DownloadOutlined,
-    UploadOutlined,
-    LoadingOutlined
+    LoadingOutlined,
+    QrcodeOutlined,
+    WalletOutlined
 } from '@ant-design/icons';
 import MobileLayout from '../components/MobileLayout';
 import Header from '../components/Header';
@@ -19,8 +21,8 @@ const Screen4 = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [uploading, setUploading] = useState(false);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('qr_code');
+    const [paymentStatus, setPaymentStatus] = useState('idle');
 
     const billingOptionId = location.state?.billingOptionId || 'swap_5_30d';
     const selectedBilling = getBillingOption(billingOptionId);
@@ -48,75 +50,40 @@ const Screen4 = () => {
         }
     }, [navigate]);
 
-    const handleUploadSlip = () => {
-        setIsModalOpen(false);
-        setUploading(true);
+    const completePayment = () => {
+        setPaymentStatus('confirmed');
+        message.success(isPackagePurchase ? t('payment.package_success') : t('payment.payment_success'));
 
-        // Mocking slip verification process
-        setTimeout(() => {
-            setUploading(false);
+        if (selectedBilling.group === 'per_swap') {
+            setMockUserEntitlement('quota');
+        } else if (selectedBilling.id === 'pass_1d') {
+            setMockUserEntitlement('daily');
+        } else if (selectedBilling.group === 'pass') {
+            setMockUserEntitlement('monthly');
+        }
 
-            // Randomly simulate success (80%) or failure (20%) for demo purposes
-            const isSuccess = Math.random() > 0.2;
+        localStorage.setItem('activeBillingOptionId', billingOptionId);
+        localStorage.setItem('activeBillingMode', selectedBilling.type);
+        localStorage.setItem('activePaymentMethod', selectedPaymentMethod);
 
-            if (isSuccess) {
-                message.success(isPackagePurchase ? t('payment.package_success') : t('payment.success_slip'));
-                if (selectedBilling.group === 'per_swap') {
-                    setMockUserEntitlement('quota');
-                } else if (selectedBilling.id === 'pass_1d') {
-                    setMockUserEntitlement('daily');
-                } else if (selectedBilling.group === 'pass') {
-                    setMockUserEntitlement('monthly');
-                }
-                localStorage.setItem('activeBillingOptionId', billingOptionId);
-                localStorage.setItem('activeBillingMode', selectedBilling.type);
-                if (isPackagePurchase) {
-                    localStorage.removeItem('activeSwapSession');
-                    localStorage.removeItem('isCharging');
-                    navigate(returnPath, { replace: true });
-                } else {
-                    localStorage.setItem('activeSwapSession', 'true');
-                    navigate('/screen6');
-                }
-            } else {
-                Modal.error({
-                    title: t('payment.failed_slip_title'),
-                    content: (
-                        <div>
-                            <p>{t('payment.failed_slip_desc')}</p>
-                            <Text type="secondary" style={{ fontSize: '12px' }}>{t('payment.failed_slip_reason')}</Text>
-                        </div>
-                    ),
-                    okText: t('common.retry'),
-                    centered: true,
-                    borderRadius: 16
-                });
-            }
-        }, 5000);
+        if (isPackagePurchase) {
+            localStorage.removeItem('activeSwapSession');
+            localStorage.removeItem('isCharging');
+            navigate(returnPath, { replace: true });
+        } else {
+            localStorage.setItem('activeSwapSession', 'true');
+            navigate('/screen6');
+        }
     };
 
-    const uploadProps = {
-        beforeUpload: (file) => {
-            const isImage = file.type.startsWith('image/');
-            if (!isImage) {
-                message.error(t('payment.support_images_only'));
-                return Upload.LIST_IGNORE;
-            }
-            return true;
-        },
-        customRequest: ({ onSuccess }) => {
-            setTimeout(() => {
-                onSuccess("ok");
-                handleUploadSlip();
-            }, 500);
-        },
-        showUploadList: false,
+    const handlePaymentStart = () => {
+        setPaymentStatus('pending');
+        setTimeout(completePayment, 3500);
     };
 
     return (
         <MobileLayout>
-            {/* Full Screen Loading Overlay */}
-            {uploading && (
+            {paymentStatus === 'pending' && (
                 <div style={{
                     position: 'absolute',
                     top: 0,
@@ -134,9 +101,9 @@ const Screen4 = () => {
                     <Spin indicator={<LoadingOutlined style={{ fontSize: 48, color: '#EF4444' }} spin />} />
                     <div style={{ textAlign: 'center' }}>
                         <Text strong style={{ fontSize: '18px', display: 'block', color: '#1f2937' }}>
-                            {t('payment.verifying_slip')}
+                            {t('payment.waiting_callback')}
                         </Text>
-                        <Text type="secondary">{t('payment.dont_close_page')}</Text>
+                        <Text type="secondary">{t('payment.callback_desc')}</Text>
                     </div>
                 </div>
             )}
@@ -165,7 +132,59 @@ const Screen4 = () => {
                     </Text>
                 </div>
 
-                {/* QR Code Card */}
+                <div style={{ marginBottom: '18px' }}>
+                    <Text strong style={{ display: 'block', marginBottom: '10px', color: '#334155' }}>
+                        {t('payment.select_payment_method')}
+                    </Text>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        {[
+                            {
+                                id: 'qr_code',
+                                icon: <QrcodeOutlined />,
+                                title: t('payment.method_qr_code'),
+                                desc: t('payment.method_qr_code_desc')
+                            },
+                            {
+                                id: 'true_money',
+                                icon: <WalletOutlined />,
+                                title: t('payment.method_true_money'),
+                                desc: t('payment.method_true_money_desc')
+                            }
+                        ].map((method) => {
+                            const selected = selectedPaymentMethod === method.id;
+                            return (
+                                <button
+                                    key={method.id}
+                                    type="button"
+                                    onClick={() => setSelectedPaymentMethod(method.id)}
+                                    style={{
+                                        border: `2px solid ${selected ? '#10b981' : '#E2E8F0'}`,
+                                        background: selected ? '#ECFDF5' : '#FFFFFF',
+                                        borderRadius: '18px',
+                                        padding: '14px',
+                                        textAlign: 'left',
+                                        minHeight: '118px',
+                                        position: 'relative'
+                                    }}
+                                >
+                                    {selected && (
+                                        <CheckCircleFilled style={{ position: 'absolute', top: '12px', right: '12px', color: '#10b981' }} />
+                                    )}
+                                    <div style={{ color: selected ? '#10b981' : '#94A3B8', fontSize: '28px', marginBottom: '10px' }}>
+                                        {method.icon}
+                                    </div>
+                                    <Text strong style={{ display: 'block', color: selected ? '#047857' : '#0f172a', marginBottom: '4px' }}>
+                                        {method.title}
+                                    </Text>
+                                    <Text type="secondary" style={{ fontSize: '12px', lineHeight: 1.4 }}>
+                                        {method.desc}
+                                    </Text>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
                 <Card
                     style={{
                         borderRadius: '24px',
@@ -177,35 +196,58 @@ const Screen4 = () => {
                     styles={{ body: { padding: '32px 24px' } }}
                 >
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-                        <div style={{
-                            padding: '12px',
-                            backgroundColor: '#fff',
-                            borderRadius: '16px',
-                            border: '1px solid #f8fafc'
-                        }}>
-                            <img
-                                src={qrImage}
-                                alt="Payment QR Code"
-                                style={{ width: '220px', height: '220px', display: 'block' }}
-                            />
-                        </div>
+                        {selectedPaymentMethod === 'qr_code' ? (
+                            <>
+                                <div style={{
+                                    padding: '12px',
+                                    backgroundColor: '#fff',
+                                    borderRadius: '16px',
+                                    border: '1px solid #f8fafc'
+                                }}>
+                                    <img
+                                        src={qrImage}
+                                        alt="Payment QR Code"
+                                        style={{ width: '220px', height: '220px', display: 'block' }}
+                                    />
+                                </div>
 
-                        <Space direction="vertical" align="center" size={4}>
-                            <Text strong style={{ fontSize: '16px' }}>{t('payment.scan_banking_title') || 'Scan with Banking App'}</Text>
-                            <Text type="secondary" style={{ fontSize: '13px' }}>{t('payment.scan_banking')}</Text>
-                        </Space>
+                                <Space direction="vertical" align="center" size={4}>
+                                    <Text strong style={{ fontSize: '16px' }}>{t('payment.scan_banking_title') || 'Scan with Banking App'}</Text>
+                                    <Text type="secondary" style={{ fontSize: '13px' }}>{t('payment.scan_banking')}</Text>
+                                </Space>
 
-                        <Button
-                            icon={<DownloadOutlined />}
-                            onClick={handleDownloadQR}
-                            style={{
-                                borderRadius: '20px',
-                                color: '#10b981',
-                                borderColor: '#10b981'
-                            }}
-                        >
-                            {t('payment.save_image')}
-                        </Button>
+                                <Button
+                                    icon={<DownloadOutlined />}
+                                    onClick={handleDownloadQR}
+                                    style={{
+                                        borderRadius: '20px',
+                                        color: '#10b981',
+                                        borderColor: '#10b981'
+                                    }}
+                                >
+                                    {t('payment.save_image')}
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <div style={{
+                                    width: '128px',
+                                    height: '128px',
+                                    borderRadius: '32px',
+                                    background: '#FFF7ED',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: '1px solid #FED7AA'
+                                }}>
+                                    <WalletOutlined style={{ fontSize: '58px', color: '#F97316' }} />
+                                </div>
+                                <Space direction="vertical" align="center" size={4}>
+                                    <Text strong style={{ fontSize: '16px' }}>{t('payment.true_money_title')}</Text>
+                                    <Text type="secondary" style={{ fontSize: '13px', textAlign: 'center' }}>{t('payment.true_money_desc')}</Text>
+                                </Space>
+                            </>
+                        )}
                     </div>
                 </Card>
 
@@ -215,11 +257,11 @@ const Screen4 = () => {
                         type="primary"
                         size="large"
                         block
-                        icon={<UploadOutlined />}
+                        loading={paymentStatus === 'pending'}
                         style={{
                             height: '56px',
                             borderRadius: '28px',
-                            backgroundColor: '#1f2937',
+                            backgroundColor: '#10b981',
                             border: 'none',
                             fontSize: '16px',
                             fontWeight: 'bold',
@@ -229,9 +271,9 @@ const Screen4 = () => {
                             gap: '10px',
                             marginBottom: '12px'
                         }}
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={handlePaymentStart}
                     >
-                        {t('payment.attach_slip')}
+                        {t('payment.start_payment')}
                     </Button>
                     <Button
                         type="text"
@@ -260,28 +302,6 @@ const Screen4 = () => {
                 </div>
 
             </div>
-
-            {/* Upload Modal */}
-            <Modal
-                title={t('payment.select_slip')}
-                open={isModalOpen}
-                onCancel={() => setIsModalOpen(false)}
-                footer={null}
-                centered
-                styles={{ body: { padding: '24px' } }}
-            >
-                <Upload.Dragger {...uploadProps} accept="image/*">
-                    <p className="ant-upload-drag-icon" style={{ marginBottom: '16px' }}>
-                        <UploadOutlined style={{ fontSize: '48px', color: '#10b981' }} />
-                    </p>
-                    <p className="ant-upload-text" style={{ fontSize: '16px', fontWeight: 600 }}>
-                        {t('payment.click_or_drag')}
-                    </p>
-                    <p className="ant-upload-hint" style={{ color: '#6b7280' }}>
-                        {t('payment.support_images_only')}
-                    </p>
-                </Upload.Dragger>
-            </Modal>
         </MobileLayout>
     );
 };
