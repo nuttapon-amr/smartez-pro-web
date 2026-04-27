@@ -255,6 +255,7 @@
         "charging_duration": "สำหรับแพ็กเกจสลับแบต {{hours}} ครั้ง",
         "qr_code": "คิวอาร์โค้ด",
         "select_payment_method": "เลือกช่องทางการชำระเงิน",
+        "change_payment_method": "เปลี่ยนการชำระเงิน",
         "method_qr_code": "QR Code",
         "method_qr_code_desc": "สแกนจ่ายผ่านแอปธนาคาร",
         "method_true_money": "TrueMoney",

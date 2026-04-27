@@ -255,6 +255,7 @@
         "charging_duration": "For {{hours}} battery swap(s)",
         "qr_code": "QR Code",
         "select_payment_method": "Select payment method",
+        "change_payment_method": "Change payment method",
         "method_qr_code": "QR Code",
         "method_qr_code_desc": "Pay from a banking app",
         "method_true_money": "TrueMoney",

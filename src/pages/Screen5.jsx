@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Button, Typography, Card, Space, Modal, Spin, message } from 'antd';
 import {
-    ArrowLeftOutlined,
     ArrowRightOutlined,
     CheckCircleFilled,
     DownloadOutlined,
     LoadingOutlined,
     QrcodeOutlined,
+    SwapOutlined,
     WalletOutlined
 } from '@ant-design/icons';
 import MobileLayout from '../components/MobileLayout';
@@ -306,7 +306,7 @@ const Screen4 = () => {
                         <Button
                             size="large"
                             block
-                            icon={<ArrowLeftOutlined />}
+                            icon={<SwapOutlined />}
                             style={{
                                 height: '50px',
                                 borderRadius: '18px',
@@ -317,7 +317,7 @@ const Screen4 = () => {
                             }}
                             onClick={() => setPaymentStep('method')}
                         >
-                            {t('common.back')}
+                            {t('payment.change_payment_method')}
                         </Button>
                     )}
                     <Button
