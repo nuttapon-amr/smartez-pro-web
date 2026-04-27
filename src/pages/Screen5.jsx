@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Button, Typography, Card, Space, Modal, Spin, message } from 'antd';
 import {
+    ArrowLeftOutlined,
+    ArrowRightOutlined,
     CheckCircleFilled,
     DownloadOutlined,
     LoadingOutlined,
@@ -23,6 +25,7 @@ const Screen4 = () => {
     const location = useLocation();
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('qr_code');
     const [paymentStatus, setPaymentStatus] = useState('idle');
+    const [paymentStep, setPaymentStep] = useState('method');
 
     const billingOptionId = location.state?.billingOptionId || 'swap_5_30d';
     const selectedBilling = getBillingOption(billingOptionId);
@@ -111,6 +114,48 @@ const Screen4 = () => {
             <Header title={t('payment.title')} showBack={true} />
 
             <div style={{ padding: '0 20px 24px 20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', margin: '14px 0 18px' }}>
+                    {[
+                        ['method', t('payment.step_method')],
+                        ['confirm', t('payment.step_confirm')]
+                    ].map(([step, label], index) => {
+                        const active = paymentStep === step;
+                        const completed = step === 'method' && paymentStep === 'confirm';
+                        return (
+                            <div
+                                key={step}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    padding: '10px',
+                                    borderRadius: '14px',
+                                    background: active || completed ? '#ECFDF5' : '#F8FAFC',
+                                    border: `1px solid ${active || completed ? '#BBF7D0' : '#E2E8F0'}`
+                                }}
+                            >
+                                <div style={{
+                                    width: '24px',
+                                    height: '24px',
+                                    borderRadius: '999px',
+                                    background: active || completed ? '#10b981' : '#CBD5E1',
+                                    color: '#FFFFFF',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontWeight: 800,
+                                    fontSize: '12px',
+                                    flexShrink: 0
+                                }}>
+                                    {completed ? <CheckCircleFilled style={{ fontSize: '13px' }} /> : index + 1}
+                                </div>
+                                <Text strong style={{ fontSize: '12px', color: active || completed ? '#047857' : '#64748B' }}>
+                                    {label}
+                                </Text>
+                            </div>
+                        );
+                    })}
+                </div>
 
                 {/* Payment Amount Card */}
                 <div style={{ textAlign: 'center', margin: '10px 0 24px 0' }}>
@@ -132,132 +177,155 @@ const Screen4 = () => {
                     </Text>
                 </div>
 
-                <div style={{ marginBottom: '18px' }}>
-                    <Text strong style={{ display: 'block', marginBottom: '10px', color: '#334155' }}>
-                        {t('payment.select_payment_method')}
-                    </Text>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                        {[
-                            {
-                                id: 'qr_code',
-                                icon: <QrcodeOutlined />,
-                                title: t('payment.method_qr_code'),
-                                desc: t('payment.method_qr_code_desc')
-                            },
-                            {
-                                id: 'true_money',
-                                icon: <WalletOutlined />,
-                                title: t('payment.method_true_money'),
-                                desc: t('payment.method_true_money_desc')
-                            }
-                        ].map((method) => {
-                            const selected = selectedPaymentMethod === method.id;
-                            return (
-                                <button
-                                    key={method.id}
-                                    type="button"
-                                    onClick={() => setSelectedPaymentMethod(method.id)}
-                                    style={{
-                                        border: `2px solid ${selected ? '#10b981' : '#E2E8F0'}`,
-                                        background: selected ? '#ECFDF5' : '#FFFFFF',
-                                        borderRadius: '18px',
-                                        padding: '14px',
-                                        textAlign: 'left',
-                                        minHeight: '118px',
-                                        position: 'relative'
-                                    }}
-                                >
-                                    {selected && (
-                                        <CheckCircleFilled style={{ position: 'absolute', top: '12px', right: '12px', color: '#10b981' }} />
-                                    )}
-                                    <div style={{ color: selected ? '#10b981' : '#94A3B8', fontSize: '28px', marginBottom: '10px' }}>
-                                        {method.icon}
+                {paymentStep === 'method' && (
+                    <div style={{ marginBottom: '18px' }}>
+                        <Text strong style={{ display: 'block', marginBottom: '10px', color: '#334155' }}>
+                            {t('payment.select_payment_method')}
+                        </Text>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            {[
+                                {
+                                    id: 'qr_code',
+                                    icon: <QrcodeOutlined />,
+                                    title: t('payment.method_qr_code'),
+                                    desc: t('payment.method_qr_code_desc')
+                                },
+                                {
+                                    id: 'true_money',
+                                    icon: <WalletOutlined />,
+                                    title: t('payment.method_true_money'),
+                                    desc: t('payment.method_true_money_desc')
+                                }
+                            ].map((method) => {
+                                const selected = selectedPaymentMethod === method.id;
+                                return (
+                                    <button
+                                        key={method.id}
+                                        type="button"
+                                        onClick={() => setSelectedPaymentMethod(method.id)}
+                                        style={{
+                                            border: `2px solid ${selected ? '#10b981' : '#E2E8F0'}`,
+                                            background: selected ? '#ECFDF5' : '#FFFFFF',
+                                            borderRadius: '18px',
+                                            padding: '14px',
+                                            textAlign: 'left',
+                                            minHeight: '118px',
+                                            position: 'relative'
+                                        }}
+                                    >
+                                        {selected && (
+                                            <CheckCircleFilled style={{ position: 'absolute', top: '12px', right: '12px', color: '#10b981' }} />
+                                        )}
+                                        <div style={{ color: selected ? '#10b981' : '#94A3B8', fontSize: '28px', marginBottom: '10px' }}>
+                                            {method.icon}
+                                        </div>
+                                        <Text strong style={{ display: 'block', color: selected ? '#047857' : '#0f172a', marginBottom: '4px' }}>
+                                            {method.title}
+                                        </Text>
+                                        <Text type="secondary" style={{ fontSize: '12px', lineHeight: 1.4 }}>
+                                            {method.desc}
+                                        </Text>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {paymentStep === 'confirm' && (
+                    <Card
+                        style={{
+                            borderRadius: '24px',
+                            border: '1px solid #e2e8f0',
+                            boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)',
+                            marginBottom: '24px',
+                            overflow: 'hidden'
+                        }}
+                        styles={{ body: { padding: '32px 24px' } }}
+                    >
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                            {selectedPaymentMethod === 'qr_code' ? (
+                                <>
+                                    <div style={{
+                                        padding: '12px',
+                                        backgroundColor: '#fff',
+                                        borderRadius: '16px',
+                                        border: '1px solid #f8fafc'
+                                    }}>
+                                        <img
+                                            src={qrImage}
+                                            alt="Payment QR Code"
+                                            style={{ width: '220px', height: '220px', display: 'block' }}
+                                        />
                                     </div>
-                                    <Text strong style={{ display: 'block', color: selected ? '#047857' : '#0f172a', marginBottom: '4px' }}>
-                                        {method.title}
-                                    </Text>
-                                    <Text type="secondary" style={{ fontSize: '12px', lineHeight: 1.4 }}>
-                                        {method.desc}
-                                    </Text>
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
 
-                <Card
-                    style={{
-                        borderRadius: '24px',
-                        border: '1px solid #e2e8f0',
-                        boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)',
-                        marginBottom: '24px',
-                        overflow: 'hidden'
-                    }}
-                    styles={{ body: { padding: '32px 24px' } }}
-                >
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-                        {selectedPaymentMethod === 'qr_code' ? (
-                            <>
-                                <div style={{
-                                    padding: '12px',
-                                    backgroundColor: '#fff',
-                                    borderRadius: '16px',
-                                    border: '1px solid #f8fafc'
-                                }}>
-                                    <img
-                                        src={qrImage}
-                                        alt="Payment QR Code"
-                                        style={{ width: '220px', height: '220px', display: 'block' }}
-                                    />
-                                </div>
+                                    <Space direction="vertical" align="center" size={4}>
+                                        <Text strong style={{ fontSize: '16px' }}>{t('payment.scan_banking_title') || 'Scan with Banking App'}</Text>
+                                        <Text type="secondary" style={{ fontSize: '13px' }}>{t('payment.scan_banking')}</Text>
+                                    </Space>
 
-                                <Space direction="vertical" align="center" size={4}>
-                                    <Text strong style={{ fontSize: '16px' }}>{t('payment.scan_banking_title') || 'Scan with Banking App'}</Text>
-                                    <Text type="secondary" style={{ fontSize: '13px' }}>{t('payment.scan_banking')}</Text>
-                                </Space>
-
-                                <Button
-                                    icon={<DownloadOutlined />}
-                                    onClick={handleDownloadQR}
-                                    style={{
-                                        borderRadius: '20px',
-                                        color: '#10b981',
-                                        borderColor: '#10b981'
-                                    }}
-                                >
-                                    {t('payment.save_image')}
-                                </Button>
-                            </>
-                        ) : (
-                            <>
-                                <div style={{
-                                    width: '128px',
-                                    height: '128px',
-                                    borderRadius: '32px',
-                                    background: '#FFF7ED',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    border: '1px solid #FED7AA'
-                                }}>
-                                    <WalletOutlined style={{ fontSize: '58px', color: '#F97316' }} />
-                                </div>
-                                <Space direction="vertical" align="center" size={4}>
-                                    <Text strong style={{ fontSize: '16px' }}>{t('payment.true_money_title')}</Text>
-                                    <Text type="secondary" style={{ fontSize: '13px', textAlign: 'center' }}>{t('payment.true_money_desc')}</Text>
-                                </Space>
-                            </>
-                        )}
-                    </div>
-                </Card>
+                                    <Button
+                                        icon={<DownloadOutlined />}
+                                        onClick={handleDownloadQR}
+                                        style={{
+                                            borderRadius: '20px',
+                                            color: '#10b981',
+                                            borderColor: '#10b981'
+                                        }}
+                                    >
+                                        {t('payment.save_image')}
+                                    </Button>
+                                </>
+                            ) : (
+                                <>
+                                    <div style={{
+                                        width: '128px',
+                                        height: '128px',
+                                        borderRadius: '32px',
+                                        background: '#FFF7ED',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        border: '1px solid #FED7AA'
+                                    }}>
+                                        <WalletOutlined style={{ fontSize: '58px', color: '#F97316' }} />
+                                    </div>
+                                    <Space direction="vertical" align="center" size={4}>
+                                        <Text strong style={{ fontSize: '16px' }}>{t('payment.true_money_title')}</Text>
+                                        <Text type="secondary" style={{ fontSize: '13px', textAlign: 'center' }}>{t('payment.true_money_desc')}</Text>
+                                    </Space>
+                                </>
+                            )}
+                        </div>
+                    </Card>
+                )}
 
                 {/* Footer Actions */}
                 <div style={{ marginTop: 'auto' }}>
+                    {paymentStep === 'confirm' && (
+                        <Button
+                            size="large"
+                            block
+                            icon={<ArrowLeftOutlined />}
+                            style={{
+                                height: '50px',
+                                borderRadius: '18px',
+                                marginBottom: '10px',
+                                color: '#475569',
+                                borderColor: '#CBD5E1',
+                                fontWeight: 700
+                            }}
+                            onClick={() => setPaymentStep('method')}
+                        >
+                            {t('common.back')}
+                        </Button>
+                    )}
                     <Button
                         type="primary"
                         size="large"
                         block
                         loading={paymentStatus === 'pending'}
+                        icon={paymentStep === 'method' ? <ArrowRightOutlined /> : null}
                         style={{
                             height: '56px',
                             borderRadius: '28px',
@@ -271,9 +339,15 @@ const Screen4 = () => {
                             gap: '10px',
                             marginBottom: '12px'
                         }}
-                        onClick={handlePaymentStart}
+                        onClick={() => {
+                            if (paymentStep === 'method') {
+                                setPaymentStep('confirm');
+                                return;
+                            }
+                            handlePaymentStart();
+                        }}
                     >
-                        {t('payment.start_payment')}
+                        {paymentStep === 'method' ? t('common.next') : t('payment.start_payment')}
                     </Button>
                     <Button
                         type="text"

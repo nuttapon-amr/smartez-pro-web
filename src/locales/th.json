@@ -249,6 +249,8 @@
     },
     "payment": {
         "title": "ชำระเงิน",
+        "step_method": "เลือกวิธีชำระ",
+        "step_confirm": "ดำเนินการ",
         "amount_to_pay": "จำนวนเงินที่ต้องชำระ",
         "charging_duration": "สำหรับแพ็กเกจสลับแบต {{hours}} ครั้ง",
         "qr_code": "คิวอาร์โค้ด",

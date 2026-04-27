@@ -249,6 +249,8 @@
     },
     "payment": {
         "title": "Payment",
+        "step_method": "Choose method",
+        "step_confirm": "Proceed",
         "amount_to_pay": "Amount to pay",
         "charging_duration": "For {{hours}} battery swap(s)",
         "qr_code": "QR Code",
