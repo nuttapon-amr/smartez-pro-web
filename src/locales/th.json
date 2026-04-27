@@ -41,12 +41,10 @@
     },
     "screen1": {
         "login_options": "ตัวเลือกการเข้าใช้งาน",
-        "otp_mode": "สมัครสมาชิก",
         "password_mode": "เข้าสู่ระบบ",
         "phone_placeholder": "กรอกเบอร์โทรศัพท์",
         "password_placeholder": "กรอกรหัสผ่านของคุณ",
         "login_button": "เข้าสู่ระบบ",
-        "otp_button": "สมัครสมาชิก",
         "station_info": "ข้อมูลสถานีสลับแบต",
         "charger_id": "รหัสตู้สลับแบต",
         "status_available": "พร้อมให้บริการ",
@@ -67,29 +65,9 @@
         "slot_full": "เต็ม",
         "slot_empty": "ว่าง",
         "slot_fault": "ขัดข้อง",
-        "login_otp_desc": "ลงทะเบียนหรือเข้าสู่ระบบด้วยเบอร์โทรศัพท์",
         "login_password_desc": "เข้าสู่ระบบด้วยหมายเลขโทรศัพท์และรหัสผ่าน",
         "password_invalid_title": "รหัสผ่านไม่ถูกต้อง",
-        "password_invalid_desc": "รหัสผ่านที่คุณระบุไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง",
-        "forgot_password": "ลืมรหัสผ่าน?",
-        "otp_mode_register": "สมัครสมาชิก",
-        "otp_mode_reset": "ลืมรหัสผ่าน"
-    },
-    "screen2": {
-        "title": "ยืนยันเบอร์โทรศัพท์",
-        "desc": "เราได้ส่งรหัสยืนยัน 6 หลักไปที่เบอร์",
-        "resend_desc": "ไม่ได้รับรหัส OTP?",
-        "resend_button": "ส่งรหัสอีกครั้ง",
-        "countdown": "ส่งรหัสอีกครั้งใน {{seconds}} วินาที",
-        "verify_button": "ยืนยันและถัดไป",
-        "set_password_title": "ตั้งรหัสผ่าน",
-        "set_password_desc": "กรุณาตั้งรหัสผ่านสำหรับเข้าใช้งานในครั้งถัดไป",
-        "new_password": "รหัสผ่านใหม่",
-        "confirm_password": "ยืนยันรหัสผ่านใหม่",
-        "password_mismatch": "รหัสผ่านไม่ตรงกัน",
-        "password_required": "กรุณากรอกรหัสผ่าน",
-        "password_complexity": "รหัสผ่านต้องมีภาษาอังกฤษพิมพ์เล็ก, พิมพ์ใหญ่, ตัวเลข, อักขระพิเศษ และยาว 8 ตัวอักษรขึ้นไป",
-        "confirm_success": "บันทึกรหัสผ่านเรียบร้อยแล้ว"
+        "password_invalid_desc": "รหัสผ่านที่คุณระบุไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง"
     },
     "screen3": {
         "title": "เลือกแพ็กเกจสลับแบต",

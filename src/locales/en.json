@@ -41,12 +41,10 @@
     },
     "screen1": {
         "login_options": "Login Options",
-        "otp_mode": "Register",
         "password_mode": "Login",
         "phone_placeholder": "Enter phone number",
         "password_placeholder": "Enter your password",
         "login_button": "Login",
-        "otp_button": "Register",
         "station_info": "Swap Station Info",
         "charger_id": "Cabinet ID",
         "status_available": "Ready to support",
@@ -67,29 +65,9 @@
         "slot_full": "Full",
         "slot_empty": "Empty",
         "slot_fault": "Fault",
-        "login_otp_desc": "Register or Login with your phone number",
         "login_password_desc": "Login with phone number and password",
         "password_invalid_title": "Incorrect Password",
-        "password_invalid_desc": "The password you entered is incorrect. Please check and try again.",
-        "forgot_password": "Forgot Password?",
-        "otp_mode_register": "Register",
-        "otp_mode_reset": "Forgot Password"
-    },
-    "screen2": {
-        "title": "Verify phone number",
-        "desc": "We have sent a 6-digit code to",
-        "resend_desc": "Didn't receive OTP?",
-        "resend_button": "Resend OTP",
-        "countdown": "Resend in {{seconds}}s",
-        "verify_button": "Verify and Continue",
-        "set_password_title": "Set Password",
-        "set_password_desc": "Please set a password for your next login",
-        "new_password": "New Password",
-        "confirm_password": "Confirm New Password",
-        "password_mismatch": "Passwords do not match",
-        "password_required": "Password is required",
-        "password_complexity": "Password must contain lowercase, uppercase, number, special character, and be at least 8 characters long",
-        "confirm_success": "Password saved successfully"
+        "password_invalid_desc": "The password you entered is incorrect. Please check and try again."
     },
     "screen3": {
         "title": "Select Swap Package",

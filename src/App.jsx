@@ -10,7 +10,6 @@ import Screen8 from './pages/Screen8';
 import Screen9 from './pages/Screen9';
 import Screen10 from './pages/Screen10';
 import Screen11 from './pages/Screen11';
-import Screen3 from './pages/Screen3';
 import LogoutSuccess from './pages/LogoutSuccess';
 import NotFound from './pages/NotFound';
 import MobileMiddleware from './components/MobileMiddleware';
@@ -37,7 +36,6 @@ function App() {
 
         {/* Mobile flow */}
         <Route path="/screen2" element={<MobileMiddleware><Screen2 /></MobileMiddleware>} />
-        <Route path="/screen3" element={<MobileMiddleware><Screen3 /></MobileMiddleware>} />
         <Route path="/screen4" element={<MobileMiddleware><ProtectedRoute><Screen4 /></ProtectedRoute></MobileMiddleware>} />
         <Route path="/screen5" element={<MobileMiddleware><ProtectedRoute><Screen5 /></ProtectedRoute></MobileMiddleware>} />
         <Route path="/screen6" element={<MobileMiddleware><ProtectedRoute><Screen6 /></ProtectedRoute></MobileMiddleware>} />

@@ -189,7 +189,7 @@ const Screen2 = () => {
                     >
                         {isLoggedIn
                             ? entitlement.hasActivePlan ? t('billing.use_current_plan') : t('billing.choose_plan')
-                            : `${t('screen1.login_button')} / ${t('screen1.otp_mode')}`}
+                            : t('screen1.login_button')}
                     </Button>
                 </div>
             </div>
