@@ -274,6 +274,8 @@
         "callback_desc": "Please do not close this page. The flow will continue after the backend callback is received.",
         "payment_success": "Payment confirmed. Starting battery swap.",
         "package_success": "Payment confirmed. Package purchased.",
+        "change_payment_confirm_title": "Confirm Payment Method Change",
+        "change_payment_confirm_desc": "Do you want to go back and choose a different payment method?",
         "cancel_confirm_title": "Confirm Cancel",
         "cancel_confirm_desc": "Are you sure you want to cancel the payment?"
     },

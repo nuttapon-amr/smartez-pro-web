@@ -84,6 +84,23 @@ const Screen4 = () => {
         setTimeout(completePayment, 3500);
     };
 
+    const handleChangePaymentMethod = () => {
+        Modal.confirm({
+            title: t('payment.change_payment_confirm_title'),
+            content: t('payment.change_payment_confirm_desc'),
+            okText: t('payment.change_payment_method'),
+            cancelText: t('common.cancel'),
+            centered: true,
+            onOk: () => setPaymentStep('method'),
+            okButtonProps: {
+                style: { borderRadius: '8px' }
+            },
+            cancelButtonProps: {
+                style: { borderRadius: '8px' }
+            }
+        });
+    };
+
     return (
         <MobileLayout>
             {paymentStatus === 'pending' && (
@@ -315,7 +332,7 @@ const Screen4 = () => {
                                 borderColor: '#CBD5E1',
                                 fontWeight: 700
                             }}
-                            onClick={() => setPaymentStep('method')}
+                            onClick={handleChangePaymentMethod}
                         >
                             {t('payment.change_payment_method')}
                         </Button>
