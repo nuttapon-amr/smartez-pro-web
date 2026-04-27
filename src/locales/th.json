@@ -25,7 +25,8 @@
         "ok": "ตกลง",
         "retry": "ลองใหม่",
         "success": "สำเร็จ",
-        "phone": "เบอร์โทรศัพท์",
+        "username": "ชื่อผู้ใช้งาน",
+        "phone": "ชื่อผู้ใช้งาน",
         "password": "รหัสผ่าน",
         "edit": "แก้ไข",
         "daily": "รายวัน",
@@ -42,7 +43,8 @@
     "screen1": {
         "login_options": "ตัวเลือกการเข้าใช้งาน",
         "password_mode": "เข้าสู่ระบบ",
-        "phone_placeholder": "กรอกเบอร์โทรศัพท์",
+        "username_placeholder": "กรอกชื่อผู้ใช้งาน",
+        "phone_placeholder": "กรอกชื่อผู้ใช้งาน",
         "password_placeholder": "กรอกรหัสผ่านของคุณ",
         "login_button": "เข้าสู่ระบบ",
         "station_info": "ข้อมูลสถานีสลับแบต",
@@ -65,7 +67,7 @@
         "slot_full": "เต็ม",
         "slot_empty": "ว่าง",
         "slot_fault": "ขัดข้อง",
-        "login_password_desc": "เข้าสู่ระบบด้วยหมายเลขโทรศัพท์และรหัสผ่าน",
+        "login_password_desc": "เข้าสู่ระบบด้วยชื่อผู้ใช้งานและรหัสผ่าน",
         "password_invalid_title": "รหัสผ่านไม่ถูกต้อง",
         "password_invalid_desc": "รหัสผ่านที่คุณระบุไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง"
     },
@@ -177,7 +179,7 @@
         "no_package_desc": "ยังไม่มีแพ็กเกจที่ใช้งานอยู่",
         "remaining": "คงเหลือ",
         "expires_at": "หมดอายุ",
-        "phone": "เบอร์ที่ใช้งาน: {{phone}}",
+        "phone": "ผู้ใช้งาน: {{phone}}",
         "purchase_history": "ประวัติการซื้อแพ็กเกจ",
         "empty_history": "ยังไม่มีประวัติการซื้อแพ็กเกจ",
         "purchase_date": "วันที่ซื้อ",
@@ -264,9 +266,9 @@
         "profile_quota": "รายครั้ง",
         "profile_daily": "รายวัน",
         "profile_monthly": "รายเดือน",
-        "example_pass_user": "ตัวอย่างเบอร์ซื้อแบบเหมา",
-        "example_quota_user": "ตัวอย่างเบอร์ซื้อแบบรายครั้ง",
-        "example_no_plan_user": "ตัวอย่างเบอร์ยังไม่ได้ซื้อ",
+        "example_pass_user": "ตัวอย่างผู้ใช้ซื้อแบบเหมา",
+        "example_quota_user": "ตัวอย่างผู้ใช้ซื้อแบบรายครั้ง",
+        "example_no_plan_user": "ตัวอย่างผู้ใช้ยังไม่ได้ซื้อ",
         "no_active_plan": "ยังไม่มีแพ็กเกจที่ใช้งานอยู่",
         "no_package_modal_title": "ยังไม่มีแพ็กเกจสำหรับใช้งาน",
         "no_package_modal_desc": "กรุณาซื้อแพ็กเกจก่อนเริ่มสลับแบตเตอรี่",
@@ -328,15 +330,7 @@
         "unit_swap": "ครั้ง"
     },
     "auth": {
-        "error_phone_required": "กรุณากรอกเบอร์โทรศัพท์",
-        "error_phone_invalid": "กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง",
-        "error_generic": "ไม่สามารถดำเนินการได้ในขณะนี้",
-        "otp_invalid": "รหัส OTP ไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง",
-        "otp_invalid_title": "รหัส OTP ไม่ถูกต้อง",
-        "otp_invalid_desc": "รหัส OTPที่คุณระบุไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง",
-        "otp_error_generic": "เกิดข้อผิดพลาดในการตรวจสอบรหัส OTP",
-        "otp_error_generic_desc": "ไม่สามารถตรวจสอบรหัส OTP ได้ในขณะนี้ กรุณาลองใหม่ภายหลัง",
-        "otp_resend_success": "ส่งรหัส OTP ใหม่เรียบร้อยแล้ว",
-        "otp_resend_error": "ไม่สามารถส่งรหัสได้ในขณะนี้"
+        "error_username_required": "กรุณากรอกชื่อผู้ใช้งาน",
+        "error_generic": "ไม่สามารถดำเนินการได้ในขณะนี้"
     }
 }

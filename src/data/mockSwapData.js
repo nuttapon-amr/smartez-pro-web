@@ -161,47 +161,51 @@ export const USER_ENTITLEMENTS = {
     }
 };
 
-export const MOCK_PHONE_ENTITLEMENT_PROFILES = {
-    '0811111111': 'monthly',
-    '0822222222': 'quota',
-    '0833333333': 'none'
+export const MOCK_USERNAME_ENTITLEMENT_PROFILES = {
+    amrmonthly: 'monthly',
+    amrquota: 'quota',
+    amrnone: 'none'
 };
 
-export const MOCK_PHONE_EXAMPLES = [
+export const MOCK_USERNAME_EXAMPLES = [
     {
-        phone: '0811111111',
+        username: 'amrmonthly',
         profile: 'monthly',
         labelKey: 'billing.example_pass_user'
     },
     {
-        phone: '0822222222',
+        username: 'amrquota',
         profile: 'quota',
         labelKey: 'billing.example_quota_user'
     },
     {
-        phone: '0833333333',
+        username: 'amrnone',
         profile: 'none',
         labelKey: 'billing.example_no_plan_user'
     }
 ];
 
-export const getCurrentMockPhone = () => localStorage.getItem('userPhone') || localStorage.getItem('lastLoginPhone') || '';
+export const getCurrentMockUsername = () => localStorage.getItem('username')
+    || localStorage.getItem('lastLoginUsername')
+    || '';
 
 export const getMockUserEntitlement = () => {
-    const phone = getCurrentMockPhone();
-    const savedProfiles = JSON.parse(localStorage.getItem('mockPhoneEntitlementProfiles') || '{}');
-    const profile = savedProfiles[phone]
-        || MOCK_PHONE_ENTITLEMENT_PROFILES[phone]
+    const username = getCurrentMockUsername();
+    const savedProfiles = JSON.parse(localStorage.getItem('mockUsernameEntitlementProfiles') || '{}');
+    const legacySavedProfiles = JSON.parse(localStorage.getItem('mockPhoneEntitlementProfiles') || '{}');
+    const profile = savedProfiles[username]
+        || legacySavedProfiles[username]
+        || MOCK_USERNAME_ENTITLEMENT_PROFILES[username]
         || localStorage.getItem('mockBillingProfile')
         || 'none';
     return USER_ENTITLEMENTS[profile] || USER_ENTITLEMENTS.none;
 };
 
-export const setMockUserEntitlement = (profile, phone = getCurrentMockPhone()) => {
-    if (phone) {
-        const savedProfiles = JSON.parse(localStorage.getItem('mockPhoneEntitlementProfiles') || '{}');
-        savedProfiles[phone] = profile;
-        localStorage.setItem('mockPhoneEntitlementProfiles', JSON.stringify(savedProfiles));
+export const setMockUserEntitlement = (profile, username = getCurrentMockUsername()) => {
+    if (username) {
+        const savedProfiles = JSON.parse(localStorage.getItem('mockUsernameEntitlementProfiles') || '{}');
+        savedProfiles[username] = profile;
+        localStorage.setItem('mockUsernameEntitlementProfiles', JSON.stringify(savedProfiles));
     }
     localStorage.setItem('mockBillingProfile', profile);
     return USER_ENTITLEMENTS[profile] || USER_ENTITLEMENTS.none;

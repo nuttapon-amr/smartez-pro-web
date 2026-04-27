@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Input, Modal, Typography } from 'antd';
-import { LockOutlined, PhoneOutlined } from '@ant-design/icons';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MobileLayout from '../components/MobileLayout';
@@ -13,7 +13,7 @@ const Screen1 = () => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { phone, setPhone, isLoading } = useAuth();
+    const { username, setUsername, isLoading, login } = useAuth();
     const [password, setPassword] = useState('');
 
     const cabinetId = searchParams.get('cabinetId');
@@ -22,9 +22,9 @@ const Screen1 = () => {
         return getPostAuthSwapTarget(cabinetId);
     };
 
-    const handlePasswordLogin = () => {
-        if (phone.length !== 10) {
-            Modal.error({ title: t('common.error'), content: t('auth.error_phone_invalid'), centered: true });
+    const handlePasswordLogin = async () => {
+        if (!username.trim()) {
+            Modal.error({ title: t('common.error'), content: t('auth.error_username_required'), centered: true });
             return;
         }
 
@@ -38,9 +38,10 @@ const Screen1 = () => {
             return;
         }
 
+        await login();
         localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userPhone', phone);
-        localStorage.setItem('lastLoginPhone', phone);
+        localStorage.setItem('username', username.trim());
+        localStorage.setItem('lastLoginUsername', username.trim());
         if (cabinetId) localStorage.setItem('currentCabinetId', cabinetId);
 
         const target = getPostAuthTarget();
@@ -77,16 +78,16 @@ const Screen1 = () => {
                 </div>
 
                 <div style={{ flex: 1 }}>
-                    <Text strong style={{ display: 'block', marginBottom: '10px', color: '#334155' }}>{t('common.phone')}</Text>
+                    <Text strong style={{ display: 'block', marginBottom: '10px', color: '#334155' }}>{t('common.username')}</Text>
                     <Input
                         size="large"
-                        placeholder="08X-XXX-XXXX"
-                        prefix={<PhoneOutlined style={{ color: '#10b981', marginRight: '8px' }} />}
-                        value={phone}
-                        onChange={(event) => setPhone(event.target.value)}
-                        maxLength={10}
-                        inputMode="numeric"
-                        style={{ height: '60px', borderRadius: '18px', fontSize: '20px', marginBottom: '18px' }}
+                        placeholder={t('screen1.username_placeholder')}
+                        prefix={<UserOutlined style={{ color: '#10b981', marginRight: '8px' }} />}
+                        value={username}
+                        onChange={(event) => setUsername(event.target.value)}
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        style={{ height: '60px', borderRadius: '18px', fontSize: '18px', marginBottom: '18px' }}
                     />
 
                     <Text strong style={{ display: 'block', marginBottom: '10px', color: '#334155' }}>{t('common.password')}</Text>
@@ -105,7 +106,7 @@ const Screen1 = () => {
                     size="large"
                     block
                     loading={isLoading}
-                    disabled={phone.length !== 10 || !password}
+                    disabled={!username.trim() || !password}
                     onClick={handlePasswordLogin}
                     style={{ height: '60px', borderRadius: '20px', background: '#10b981', border: 'none', fontSize: '18px', fontWeight: 800 }}
                 >

@@ -25,7 +25,8 @@
         "ok": "OK",
         "retry": "Try Again",
         "success": "Success",
-        "phone": "Phone Number",
+        "username": "Username",
+        "phone": "Username",
         "password": "Password",
         "edit": "Edit",
         "daily": "Daily",
@@ -42,7 +43,8 @@
     "screen1": {
         "login_options": "Login Options",
         "password_mode": "Login",
-        "phone_placeholder": "Enter phone number",
+        "username_placeholder": "Enter username",
+        "phone_placeholder": "Enter username",
         "password_placeholder": "Enter your password",
         "login_button": "Login",
         "station_info": "Swap Station Info",
@@ -65,7 +67,7 @@
         "slot_full": "Full",
         "slot_empty": "Empty",
         "slot_fault": "Fault",
-        "login_password_desc": "Login with phone number and password",
+        "login_password_desc": "Login with username and password",
         "password_invalid_title": "Incorrect Password",
         "password_invalid_desc": "The password you entered is incorrect. Please check and try again."
     },
@@ -177,7 +179,7 @@
         "no_package_desc": "No active package",
         "remaining": "Remaining",
         "expires_at": "Expires",
-        "phone": "Phone: {{phone}}",
+        "phone": "User: {{phone}}",
         "purchase_history": "Package purchase history",
         "empty_history": "No package purchase history",
         "purchase_date": "Purchase date",
@@ -264,9 +266,9 @@
         "profile_quota": "Swap credits",
         "profile_daily": "Daily",
         "profile_monthly": "Monthly",
-        "example_pass_user": "Example phone with pass package",
-        "example_quota_user": "Example phone with swap-credit package",
-        "example_no_plan_user": "Example phone with no package",
+        "example_pass_user": "Example user with pass package",
+        "example_quota_user": "Example user with swap-credit package",
+        "example_no_plan_user": "Example user with no package",
         "no_active_plan": "No active package",
         "no_package_modal_title": "No package available",
         "no_package_modal_desc": "Please buy a package before starting a battery swap.",
@@ -328,15 +330,7 @@
         "unit_swap": "swap"
     },
     "auth": {
-        "error_phone_required": "Phone number is required",
-        "error_phone_invalid": "Please enter a valid phone number",
-        "error_generic": "Unable to proceed at this time",
-        "otp_invalid": "Invalid OTP. Please try again.",
-        "otp_invalid_title": "Invalid OTP",
-        "otp_invalid_desc": "The OTP you entered is incorrect. Please check and try again.",
-        "otp_error_generic": "Error verifying OTP",
-        "otp_error_generic_desc": "Unable to verify OTP at this time. Please try again later.",
-        "otp_resend_success": "OTP resent successfully",
-        "otp_resend_error": "Unable to send OTP at this time"
+        "error_username_required": "Username is required",
+        "error_generic": "Unable to proceed at this time"
     }
 }

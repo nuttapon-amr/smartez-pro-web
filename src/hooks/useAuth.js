@@ -1,22 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Modal } from 'antd';
-import { useTranslation } from 'react-i18next';
 import authService from '../services/authService';
 import { getPostAuthSwapTarget } from '../utils/swapAccess';
 
 export const useAuth = () => {
-    const { t } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
-    const [phone, setPhone] = useState(localStorage.getItem('userPhone') || '');
-    const [otp, setOtp] = useState('');
+    const [username, setUsername] = useState(localStorage.getItem('username') || '');
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
 
     useEffect(() => {
         const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-        const publicScreens = ['/screen1', '/screen3', '/'];
+        const publicScreens = ['/screen1', '/'];
 
         if (isLoggedIn && publicScreens.includes(location.pathname)) {
             const cabinetId = localStorage.getItem('currentCabinetId') || localStorage.getItem('currentChargerId');
@@ -25,119 +20,30 @@ export const useAuth = () => {
         }
     }, [navigate, location.pathname]);
 
-    const handlePhoneChange = useCallback((value) => {
-        // Only allow digits
-        if (!/^\d*$/.test(value)) return;
-        // Must start with 0 if not empty
-        if (value.length > 0 && value[0] !== '0') return;
-        // Max length 10
-        if (value.length <= 10) {
-            setPhone(value);
-        }
+    const handleUsernameChange = useCallback((value) => {
+        setUsername(value);
     }, []);
 
     const login = useCallback(async () => {
-        if (!phone) {
-            Modal.error({ title: t('common.error'), content: t('auth.error_phone_required'), centered: true });
-            return;
-        }
-        if (phone.length < 10) {
-            Modal.error({ title: t('common.error'), content: t('auth.error_phone_invalid'), centered: true });
-            return;
-        }
-
         setIsLoading(true);
         try {
-            await authService.login(phone);
-            if (location.pathname !== '/screen3') {
-                navigate('/screen3');
-            }
-        } catch {
-            Modal.error({ title: t('common.error'), content: t('auth.error_generic'), centered: true });
+            await authService.login(username);
         } finally {
             setIsLoading(false);
         }
-    }, [location.pathname, navigate, phone, t]);
-
-    const verifyOtp = async () => {
-        if (otp.length !== 6) return;
-
-        setIsLoading(true);
-        setError('');
-        try {
-            // Use the current phone number from state or localStorage
-            const userPhone = phone || localStorage.getItem('userPhone');
-            const result = await authService.verifyOtp(userPhone, otp);
-
-            if (result.success) {
-                // Return success so the component can decide what to do next
-                return { success: true };
-            } else {
-                setError(t('auth.otp_invalid'));
-                Modal.error({
-                    title: t('auth.otp_invalid_title'),
-                    content: t('auth.otp_invalid_desc'),
-                    centered: true,
-                    okText: t('common.retry'),
-                    maskClosable: true
-                });
-            }
-        } catch {
-            setError(t('auth.otp_error_generic'));
-            Modal.error({
-                title: t('common.error'),
-                content: t('auth.otp_error_generic_desc'),
-                centered: true
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    }, [username]);
 
     const logout = async () => {
         await authService.logout();
         navigate('/logout-success', { replace: true });
     };
 
-    const proceedToOtp = () => {
-        if (!phone || phone.length < 10) {
-            Modal.error({ title: t('common.error'), content: t('auth.error_phone_invalid'), centered: true });
-            return;
-        }
-        localStorage.setItem('userPhone', phone);
-        navigate('/screen3');
-    };
-
-    const editPhone = () => {
-        setPhone('');
-        navigate('/screen1');
-    };
-
-    const resendOtp = async () => {
-        setIsLoading(true);
-        try {
-            await authService.login(phone);
-            Modal.success({ title: t('common.success'), content: t('auth.otp_resend_success'), centered: true });
-        } catch {
-            Modal.error({ title: t('common.error'), content: t('auth.otp_resend_error'), centered: true });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     return {
-        phone,
-        setPhone: handlePhoneChange,
-        otp,
-        setOtp,
+        username,
+        setUsername: handleUsernameChange,
         isLoading,
         login,
-        proceedToOtp,
-        editPhone,
-        resendOtp,
-        verifyOtp,
-        logout,
-        error
+        logout
     };
 };
 
