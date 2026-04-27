@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Typography, Card, Space, Modal, Spin, message } from 'antd';
+import { Button, Typography, Card, Space, Modal, Spin, message, Input } from 'antd';
 import {
     ArrowRightOutlined,
     CheckCircleFilled,
@@ -26,6 +26,11 @@ const Screen4 = () => {
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('qr_code');
     const [paymentStatus, setPaymentStatus] = useState('idle');
     const [paymentStep, setPaymentStep] = useState('method');
+    const [trueMoneyStatus, setTrueMoneyStatus] = useState('idle');
+    const [trueMoneyStep, setTrueMoneyStep] = useState('mobile');
+    const [trueMoneyPhone, setTrueMoneyPhone] = useState('');
+    const [trueMoneyOtp, setTrueMoneyOtp] = useState('');
+    const [trueMoneyError, setTrueMoneyError] = useState('');
 
     const billingOptionId = location.state?.billingOptionId || 'swap_5_30d';
     const selectedBilling = getBillingOption(billingOptionId);
@@ -79,9 +84,50 @@ const Screen4 = () => {
         }
     };
 
-    const handlePaymentStart = () => {
+    const startBackendCallbackWait = () => {
         setPaymentStatus('pending');
         setTimeout(completePayment, 3500);
+    };
+
+    const handlePaymentStart = () => {
+        startBackendCallbackWait();
+    };
+
+    const handleTrueMoneyPhoneSubmit = () => {
+        if (!/^0\d{9}$/.test(trueMoneyPhone)) {
+            setTrueMoneyError(t('payment.true_money_phone_error'));
+            return;
+        }
+
+        setTrueMoneyError('');
+        setTrueMoneyStep('otp');
+    };
+
+    const handleTrueMoneyOtpSubmit = () => {
+        if (trueMoneyOtp.length !== 6) {
+            setTrueMoneyError(t('payment.true_money_otp_error'));
+            return;
+        }
+
+        setTrueMoneyError('');
+        setTrueMoneyStatus('authorizing');
+        setTimeout(() => {
+            setTrueMoneyStatus('approved');
+            setTrueMoneyStep('result');
+            message.success(t('payment.true_money_approved'));
+            setTimeout(() => {
+                startBackendCallbackWait();
+            }, 900);
+        }, 1400);
+    };
+
+    const resetTrueMoneyFlow = () => {
+        if (trueMoneyStatus === 'authorizing') return;
+        setTrueMoneyStatus('idle');
+        setTrueMoneyStep('mobile');
+        setTrueMoneyPhone('');
+        setTrueMoneyOtp('');
+        setTrueMoneyError('');
     };
 
     const handleChangePaymentMethod = () => {
@@ -91,7 +137,10 @@ const Screen4 = () => {
             okText: t('payment.change_payment_method'),
             cancelText: t('common.cancel'),
             centered: true,
-            onOk: () => setPaymentStep('method'),
+            onOk: () => {
+                resetTrueMoneyFlow();
+                setPaymentStep('method');
+            },
             okButtonProps: {
                 style: { borderRadius: '8px' }
             },
@@ -136,8 +185,10 @@ const Screen4 = () => {
                         ['method', t('payment.step_method')],
                         ['confirm', t('payment.step_confirm')]
                     ].map(([step, label], index) => {
-                        const active = paymentStep === step;
-                        const completed = step === 'method' && paymentStep === 'confirm';
+                        const active = step === 'confirm'
+                            ? paymentStep === 'confirm' || paymentStep === 'truemoney'
+                            : paymentStep === step;
+                        const completed = step === 'method' && (paymentStep === 'confirm' || paymentStep === 'truemoney');
                         return (
                             <div
                                 key={step}
@@ -219,7 +270,13 @@ const Screen4 = () => {
                                     <button
                                         key={method.id}
                                         type="button"
-                                        onClick={() => setSelectedPaymentMethod(method.id)}
+                                        onClick={() => {
+                                            setSelectedPaymentMethod(method.id);
+                                            if (method.id === 'true_money') {
+                                                resetTrueMoneyFlow();
+                                                setPaymentStep('truemoney');
+                                            }
+                                        }}
                                         style={{
                                             border: `2px solid ${selected ? '#10b981' : '#E2E8F0'}`,
                                             background: selected ? '#ECFDF5' : '#FFFFFF',
@@ -317,9 +374,154 @@ const Screen4 = () => {
                     </Card>
                 )}
 
+                {paymentStep === 'truemoney' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
+                        <div style={{
+                            padding: '14px 16px',
+                            borderRadius: '18px',
+                            background: '#FFF7ED',
+                            border: '1px solid #FED7AA',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px'
+                        }}>
+                            <div style={{
+                                width: '44px',
+                                height: '44px',
+                                borderRadius: '14px',
+                                background: '#FFFFFF',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0
+                            }}>
+                                <WalletOutlined style={{ fontSize: '24px', color: '#F97316' }} />
+                            </div>
+                            <div>
+                                <Text strong style={{ display: 'block', color: '#9A3412' }}>TrueMoney</Text>
+                                <Text type="secondary" style={{ fontSize: '12px' }}>{t('payment.true_money_page_desc')}</Text>
+                            </div>
+                        </div>
+
+                        <Card
+                            style={{
+                                borderRadius: '24px',
+                                border: '1px solid #e2e8f0',
+                                boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05)',
+                                overflow: 'hidden'
+                            }}
+                            styles={{ body: { padding: '24px' } }}
+                        >
+                            <div style={{ textAlign: 'center' }}>
+                                <div style={{
+                                    width: '86px',
+                                    height: '86px',
+                                    borderRadius: '24px',
+                                    background: '#FFF7ED',
+                                    border: '1px solid #FED7AA',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    margin: '0 auto 16px'
+                                }}>
+                                    {trueMoneyStatus === 'authorizing' ? (
+                                        <Spin indicator={<LoadingOutlined style={{ fontSize: 36, color: '#F97316' }} spin />} />
+                                    ) : trueMoneyStatus === 'approved' ? (
+                                        <CheckCircleFilled style={{ fontSize: '42px', color: '#10b981' }} />
+                                    ) : trueMoneyStep === 'otp' ? (
+                                        <QrcodeOutlined style={{ fontSize: '42px', color: '#F97316' }} />
+                                    ) : (
+                                        <WalletOutlined style={{ fontSize: '42px', color: '#F97316' }} />
+                                    )}
+                                </div>
+                                <Text strong style={{ display: 'block', fontSize: '16px', color: '#111827', marginBottom: '8px' }}>
+                                    {trueMoneyStep === 'mobile'
+                                        ? t('payment.true_money_phone_title')
+                                        : trueMoneyStep === 'otp'
+                                            ? t('payment.true_money_otp_title')
+                                            : t('payment.true_money_approved_title')}
+                                </Text>
+                                <Text type="secondary" style={{ display: 'block', fontSize: '13px', lineHeight: 1.5, marginBottom: '16px' }}>
+                                    {trueMoneyStatus === 'authorizing'
+                                        ? t('payment.true_money_authorizing_desc')
+                                        : trueMoneyStatus === 'approved'
+                                            ? t('payment.true_money_approved_desc')
+                                            : trueMoneyStep === 'otp'
+                                                ? t('payment.true_money_otp_desc')
+                                                : t('payment.true_money_phone_desc')}
+                                </Text>
+                            </div>
+
+                            <div style={{ background: '#F8FAFC', borderRadius: '16px', padding: '14px', border: '1px solid #E2E8F0' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
+                                    <Text type="secondary">{t('payment.true_money_merchant')}</Text>
+                                    <Text strong>AMR Battery Swap</Text>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
+                                    <Text type="secondary">{t('payment.true_money_package')}</Text>
+                                    <Text strong style={{ textAlign: 'right' }}>{packageLabel}</Text>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                                    <Text type="secondary">{t('payment.amount_to_pay')}</Text>
+                                    <Text strong style={{ color: '#F97316' }}>฿{amountToPay.toFixed(2)}</Text>
+                                </div>
+                            </div>
+
+                            {trueMoneyStep === 'mobile' && (
+                                <div style={{ marginTop: '16px' }}>
+                                    <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+                                        {t('payment.true_money_phone_label')}
+                                    </Text>
+                                    <Input
+                                        size="large"
+                                        inputMode="numeric"
+                                        maxLength={10}
+                                        placeholder={t('payment.true_money_phone_placeholder')}
+                                        value={trueMoneyPhone}
+                                        onChange={(event) => {
+                                            setTrueMoneyPhone(event.target.value.replace(/\D/g, '').slice(0, 10));
+                                            setTrueMoneyError('');
+                                        }}
+                                        style={{ borderRadius: '14px' }}
+                                    />
+                                </div>
+                            )}
+
+                            {trueMoneyStep === 'otp' && trueMoneyStatus !== 'approved' && (
+                                <div style={{ marginTop: '16px' }}>
+                                    <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+                                        {t('payment.true_money_otp_label')}
+                                    </Text>
+                                    <Input
+                                        size="large"
+                                        inputMode="numeric"
+                                        maxLength={6}
+                                        placeholder={t('payment.true_money_otp_placeholder')}
+                                        value={trueMoneyOtp}
+                                        onChange={(event) => {
+                                            setTrueMoneyOtp(event.target.value.replace(/\D/g, '').slice(0, 6));
+                                            setTrueMoneyError('');
+                                        }}
+                                        style={{ borderRadius: '14px', letterSpacing: '8px', textAlign: 'center', fontWeight: 800 }}
+                                    />
+                                    <Text type="secondary" style={{ display: 'block', fontSize: '12px', marginTop: '8px' }}>
+                                        {t('payment.true_money_otp_hint')}
+                                    </Text>
+                                </div>
+                            )}
+
+                            {trueMoneyError && (
+                                <Text type="danger" style={{ display: 'block', marginTop: '10px', fontSize: '13px', fontWeight: 600 }}>
+                                    {trueMoneyError}
+                                </Text>
+                            )}
+                        </Card>
+                    </div>
+                )}
+
                 {/* Footer Actions */}
                 <div style={{ marginTop: 'auto' }}>
-                    {paymentStep === 'confirm' && (
+                    {(paymentStep === 'confirm' || paymentStep === 'truemoney') && (
                         <Button
                             size="large"
                             block
@@ -341,7 +543,8 @@ const Screen4 = () => {
                         type="primary"
                         size="large"
                         block
-                        loading={paymentStatus === 'pending'}
+                        loading={paymentStatus === 'pending' || trueMoneyStatus === 'authorizing'}
+                        disabled={paymentStep === 'truemoney' && trueMoneyStatus === 'approved'}
                         icon={paymentStep === 'method' ? <ArrowRightOutlined /> : null}
                         style={{
                             height: '56px',
@@ -358,13 +561,29 @@ const Screen4 = () => {
                         }}
                         onClick={() => {
                             if (paymentStep === 'method') {
-                                setPaymentStep('confirm');
+                                setPaymentStep(selectedPaymentMethod === 'true_money' ? 'truemoney' : 'confirm');
+                                return;
+                            }
+                            if (paymentStep === 'truemoney') {
+                                if (trueMoneyStep === 'mobile') {
+                                    handleTrueMoneyPhoneSubmit();
+                                    return;
+                                }
+                                handleTrueMoneyOtpSubmit();
                                 return;
                             }
                             handlePaymentStart();
                         }}
                     >
-                        {paymentStep === 'method' ? t('common.next') : t('payment.start_payment')}
+                        {paymentStep === 'method'
+                            ? t('common.next')
+                            : paymentStep === 'truemoney'
+                                ? trueMoneyStep === 'mobile'
+                                    ? t('payment.true_money_phone_button')
+                                    : trueMoneyStatus === 'approved'
+                                        ? t('payment.true_money_approved_short')
+                                        : t('payment.true_money_otp_button')
+                                : t('payment.start_payment')}
                     </Button>
                     <Button
                         type="text"
