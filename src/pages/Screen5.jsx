@@ -272,9 +272,8 @@ const Screen4 = () => {
                                         type="button"
                                         onClick={() => {
                                             setSelectedPaymentMethod(method.id);
-                                            if (method.id === 'true_money') {
+                                            if (method.id === 'true_money' && selectedPaymentMethod !== 'true_money') {
                                                 resetTrueMoneyFlow();
-                                                setPaymentStep('truemoney');
                                             }
                                         }}
                                         style={{
