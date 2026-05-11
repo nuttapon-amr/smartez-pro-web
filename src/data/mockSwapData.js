@@ -185,9 +185,19 @@ export const MOCK_USERNAME_EXAMPLES = [
     }
 ];
 
-export const getCurrentMockUsername = () => localStorage.getItem('username')
+export const normalizeMockUsername = (username = '') => username.trim().toLowerCase();
+
+export const getCurrentMockUsername = () => normalizeMockUsername(
+    localStorage.getItem('username')
     || localStorage.getItem('lastLoginUsername')
-    || '';
+    || ''
+);
+
+const isEntitlementExpired = (entitlement) => (
+    entitlement?.expiresAt
+        ? new Date(entitlement.expiresAt).getTime() < Date.now()
+        : false
+);
 
 export const getMockUserEntitlement = () => {
     const username = getCurrentMockUsername();
@@ -198,13 +208,21 @@ export const getMockUserEntitlement = () => {
         || MOCK_USERNAME_ENTITLEMENT_PROFILES[username]
         || localStorage.getItem('mockBillingProfile')
         || 'none';
-    return USER_ENTITLEMENTS[profile] || USER_ENTITLEMENTS.none;
+    const entitlement = USER_ENTITLEMENTS[profile] || USER_ENTITLEMENTS.none;
+
+    if (entitlement.hasActivePlan && isEntitlementExpired(entitlement)) {
+        return USER_ENTITLEMENTS.none;
+    }
+
+    return entitlement;
 };
 
 export const setMockUserEntitlement = (profile, username = getCurrentMockUsername()) => {
-    if (username) {
+    const normalizedUsername = normalizeMockUsername(username);
+
+    if (normalizedUsername) {
         const savedProfiles = JSON.parse(localStorage.getItem('mockUsernameEntitlementProfiles') || '{}');
-        savedProfiles[username] = profile;
+        savedProfiles[normalizedUsername] = profile;
         localStorage.setItem('mockUsernameEntitlementProfiles', JSON.stringify(savedProfiles));
     }
     localStorage.setItem('mockBillingProfile', profile);

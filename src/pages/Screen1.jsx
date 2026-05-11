@@ -5,6 +5,7 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MobileLayout from '../components/MobileLayout';
 import useAuth from '../hooks/useAuth';
+import { normalizeMockUsername } from '../data/mockSwapData';
 import { getPostAuthSwapTarget } from '../utils/swapAccess';
 
 const { Title, Text } = Typography;
@@ -38,10 +39,12 @@ const Screen1 = () => {
             return;
         }
 
+        const normalizedUsername = normalizeMockUsername(username);
+
         await login();
         localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('username', username.trim());
-        localStorage.setItem('lastLoginUsername', username.trim());
+        localStorage.setItem('username', normalizedUsername);
+        localStorage.setItem('lastLoginUsername', normalizedUsername);
         if (cabinetId) localStorage.setItem('currentCabinetId', cabinetId);
 
         const target = getPostAuthTarget();
