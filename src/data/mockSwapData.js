@@ -164,7 +164,10 @@ export const USER_ENTITLEMENTS = {
 export const MOCK_USERNAME_ENTITLEMENT_PROFILES = {
     amrmonthly: 'monthly',
     amrquota: 'quota',
-    amrnone: 'none'
+    amrnone: 'none',
+    '0811111111': 'monthly',
+    '0822222222': 'quota',
+    '0833333333': 'none'
 };
 
 export const MOCK_USERNAME_EXAMPLES = [
@@ -174,12 +177,27 @@ export const MOCK_USERNAME_EXAMPLES = [
         labelKey: 'billing.example_pass_user'
     },
     {
+        username: '0811111111',
+        profile: 'monthly',
+        labelKey: 'billing.example_pass_user'
+    },
+    {
         username: 'amrquota',
         profile: 'quota',
         labelKey: 'billing.example_quota_user'
     },
     {
+        username: '0822222222',
+        profile: 'quota',
+        labelKey: 'billing.example_quota_user'
+    },
+    {
         username: 'amrnone',
+        profile: 'none',
+        labelKey: 'billing.example_no_plan_user'
+    },
+    {
+        username: '0833333333',
         profile: 'none',
         labelKey: 'billing.example_no_plan_user'
     }
