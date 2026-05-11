@@ -140,7 +140,7 @@ export const USER_ENTITLEMENTS = {
         hasActivePlan: true,
         planNameKey: 'billing.pass_1d_title',
         remainingQuota: 4,
-        expiresAt: '2026-04-18T23:59:00',
+        expiresAt: '2026-05-11T23:59:00',
         billingOptionId: 'pass_1d'
     },
     monthly: {
@@ -148,7 +148,7 @@ export const USER_ENTITLEMENTS = {
         hasActivePlan: true,
         planNameKey: 'billing.pass_30d_title',
         remainingQuota: 42,
-        expiresAt: '2026-04-30T23:59:00',
+        expiresAt: '2026-06-09T23:59:00',
         billingOptionId: 'pass_30d'
     },
     quota: {
@@ -156,7 +156,7 @@ export const USER_ENTITLEMENTS = {
         hasActivePlan: true,
         planNameKey: 'billing.swap_20_title',
         remainingQuota: 20,
-        expiresAt: '2026-05-18T23:59:00',
+        expiresAt: '2026-06-10T23:59:00',
         billingOptionId: 'swap_20_30d'
     }
 };

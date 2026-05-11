@@ -23,22 +23,22 @@ const getMockPurchaseHistory = (entitlement, packageTitle) => {
 
     return [
         {
-            id: 'PKG-2026-0418-001',
+            id: 'PKG-2026-0510-001',
             title: packageTitle,
-            date: '18 Apr 2026',
+            date: '10 May 2026',
             amount: entitlement.profile === 'quota' ? '790.00' : entitlement.profile === 'daily' ? '99.00' : '1,990.00',
             statusKey: 'package_page.active',
             remaining: entitlement.remainingQuota,
             expiresAt: entitlement.expiresAt
         },
         {
-            id: 'PKG-2026-0320-001',
+            id: 'PKG-2026-0405-001',
             title: entitlement.profile === 'quota' ? 'แพ็ก 10 ครั้ง' : 'เหมารายเดือน',
-            date: '20 Mar 2026',
+            date: '05 Apr 2026',
             amount: entitlement.profile === 'quota' ? '420.00' : '1,990.00',
             statusKey: 'package_page.expired',
             remaining: 0,
-            expiresAt: '2026-04-18T23:59:00'
+            expiresAt: '2026-05-05T23:59:00'
         }
     ];
 };
