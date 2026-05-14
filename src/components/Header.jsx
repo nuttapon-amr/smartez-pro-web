@@ -4,7 +4,6 @@ import {
     LeftOutlined,
     MoreOutlined,
     HistoryOutlined,
-    GiftOutlined,
     LogoutOutlined,
     ExclamationCircleOutlined
 } from '@ant-design/icons';
@@ -95,22 +94,6 @@ const Header = ({ title, showMenu = true }) => {
                 onClick={() => handleNavigate('/screen9')}
             >
                 {t('common.history')}
-            </Button>
-            <Button
-                type="text"
-                icon={<GiftOutlined />}
-                style={{
-                    textAlign: 'left',
-                    justifyContent: 'flex-start',
-                    paddingLeft: '12px',
-                    height: '40px',
-                    backgroundColor: location.pathname === '/screen8' ? '#fee2e2' : 'transparent',
-                    color: location.pathname === '/screen8' ? '#EF4444' : 'rgba(0, 0, 0, 0.85)',
-                    fontWeight: location.pathname === '/screen8' ? '600' : 'normal'
-                }}
-                onClick={() => handleNavigate('/screen8')}
-            >
-                {t('common.charging')}
             </Button>
             <Divider style={{ margin: '8px 4px' }} />
             <Button

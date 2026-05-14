@@ -57,7 +57,7 @@ const Screen1 = () => {
 
     return (
         <MobileLayout>
-            <div style={{ minHeight: '100vh', padding: '24px', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%)' }}>
+            <div style={{ height: '100dvh', minHeight: '100vh', boxSizing: 'border-box', padding: '24px', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%)', overflowY: 'auto' }}>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '28px' }}>
                     <Button
                         type="text"
@@ -80,7 +80,7 @@ const Screen1 = () => {
                     </Text>
                 </div>
 
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minHeight: 0 }}>
                     <Text strong style={{ display: 'block', marginBottom: '10px', color: '#334155' }}>{t('common.username')}</Text>
                     <Input
                         size="large"
@@ -111,7 +111,7 @@ const Screen1 = () => {
                     loading={isLoading}
                     disabled={!username.trim() || !password}
                     onClick={handlePasswordLogin}
-                    style={{ height: '60px', borderRadius: '20px', background: '#10b981', border: 'none', fontSize: '18px', fontWeight: 800 }}
+                    style={{ height: '60px', flexShrink: 0, marginTop: '24px', borderRadius: '20px', background: '#10b981', border: 'none', fontSize: '18px', fontWeight: 800 }}
                 >
                     {t('screen1.login_button')}
                 </Button>

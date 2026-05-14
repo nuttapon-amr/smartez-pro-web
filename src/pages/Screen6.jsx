@@ -4,7 +4,6 @@ import {
     CheckCircleFilled,
     ClockCircleOutlined,
     CustomerServiceFilled,
-    LoadingOutlined,
     MessageOutlined,
     PhoneOutlined,
     ThunderboltFilled
@@ -28,13 +27,15 @@ const MOCK_SWAP = {
     fullBatteries: 8
 };
 
-const FLOW_STEPS = ['connecting', 'return_open', 'verifying_return', 'pickup_ready'];
+const FLOW_STEPS = ['return_open', 'payment', 'pickup_ready'];
 
 const Screen6 = () => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const { hasActiveSwap, isLoading, completeSwap } = useSwapSession();
-    const [swapStep, setSwapStep] = useState('connecting');
+    const [swapStep] = useState(() => (
+        localStorage.getItem('swapFlowStage') === 'pickup' ? 'pickup_ready' : 'return_open'
+    ));
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
@@ -42,48 +43,21 @@ const Screen6 = () => {
         document.title = `${t('screen5.title')} | AMR Battery Swap`;
     }, [t]);
 
-    useEffect(() => {
-        if (swapStep !== 'connecting') return undefined;
-        const timer = setTimeout(() => setSwapStep('return_open'), 1400);
-        return () => clearTimeout(timer);
-    }, [swapStep]);
-
-    useEffect(() => {
-        if (swapStep !== 'verifying_return') return undefined;
-        const timer = setTimeout(() => setSwapStep('pickup_ready'), 1600);
-        return () => clearTimeout(timer);
-    }, [swapStep]);
-
     const currentStepIndex = Math.max(0, FLOW_STEPS.indexOf(swapStep));
 
     const steps = useMemo(() => ([
-        { title: t('screen5.step_connecting') },
         { title: t('screen5.step_return_instruction') },
-        { title: t('screen5.step_verify_return') },
+        { title: t('payment.title') },
         { title: t('screen5.step_pickup_instruction') }
     ]), [t]);
 
     const screenCopy = {
-        connecting: {
-            status: t('screen5.status_connecting'),
-            title: t('screen5.connecting_title'),
-            desc: t('screen5.connecting_desc'),
-            icon: <div style={{ textAlign: 'center' }}><LoadingOutlined spin style={{ color: '#10b981', fontSize: '42px' }} /><Text type="secondary" style={{ display: 'block', marginTop: '10px', fontSize: '12px', fontWeight: 700 }}>{t('screen5.connecting_spinner')}</Text></div>,
-            accent: '#10b981'
-        },
         return_open: {
             status: t('screen5.status_return_open'),
             title: t('screen5.return_instruction_title', { slot: MOCK_SWAP.returnSlot }),
             desc: t('screen5.return_instruction_desc', { slot: MOCK_SWAP.returnSlot }),
             icon: <ThunderboltFilled style={{ color: '#f59e0b', fontSize: '42px' }} />,
             accent: '#f59e0b'
-        },
-        verifying_return: {
-            status: t('screen5.status_verifying'),
-            title: t('screen5.verifying_return_title'),
-            desc: t('screen5.verifying_return_desc'),
-            icon: <div style={{ textAlign: 'center' }}><LoadingOutlined spin style={{ color: '#3b82f6', fontSize: '42px' }} /><Text type="secondary" style={{ display: 'block', marginTop: '10px', fontSize: '12px', fontWeight: 700 }}>{t('screen5.verifying_spinner')}</Text></div>,
-            accent: '#3b82f6'
         },
         pickup_ready: {
             status: t('screen5.status_pickup_ready'),
@@ -95,11 +69,23 @@ const Screen6 = () => {
     }[swapStep];
 
     const handleReturnConfirmed = () => {
-        setSwapStep('verifying_return');
+        localStorage.setItem('oldBatteryReturned', 'true');
+        localStorage.setItem('swapFlowStage', 'payment');
+        navigate('/screen5', {
+            state: {
+                price: 20,
+                serviceLabel: t('payment.swap_service_label'),
+                returnPath: '/screen6',
+                nextSwapStage: 'pickup'
+            }
+        });
     };
 
     const handlePickupConfirm = () => {
         setIsConfirmModalOpen(false);
+        localStorage.removeItem('swapFlowStage');
+        localStorage.removeItem('oldBatteryReturned');
+        localStorage.removeItem('swapPaymentConfirmed');
         completeSwap();
     };
 
@@ -176,7 +162,7 @@ const Screen6 = () => {
                             <div style={{ width: '132px', height: '132px', borderRadius: '36px', background: '#ECFDF5', border: `1px solid ${screenCopy.accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
                                 {screenCopy.icon}
                             </div>
-                            <Tag color={swapStep === 'return_open' ? 'warning' : swapStep === 'pickup_ready' ? 'success' : 'processing'} style={{ borderRadius: '999px', marginBottom: '12px', fontWeight: 700 }}>
+                            <Tag color={swapStep === 'return_open' ? 'warning' : 'success'} style={{ borderRadius: '999px', marginBottom: '12px', fontWeight: 700 }}>
                                 {screenCopy.status}
                             </Tag>
                             <Title level={4} style={{ margin: '0 0 8px', color: '#0f172a' }}>
@@ -214,11 +200,6 @@ const Screen6 = () => {
                             </Button>
                         )}
 
-                        {(swapStep === 'connecting' || swapStep === 'verifying_return') && (
-                            <Button size="large" block disabled style={{ height: '60px', borderRadius: '18px', fontWeight: 800, fontSize: '16px' }}>
-                                {swapStep === 'connecting' ? t('screen5.connecting_button') : t('screen5.verifying_button')}
-                            </Button>
-                        )}
                     </div>
                 </div>
 

@@ -14,7 +14,7 @@ import MobileLayout from '../components/MobileLayout';
 import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { SWAP_RECEIPT, getBillingOption } from '../data/mockSwapData';
+import { SWAP_RECEIPT } from '../data/mockSwapData';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -30,14 +30,7 @@ const Screen9 = () => {
         if (!requestedReceipts) return false;
         return JSON.parse(requestedReceipts).includes(SWAP_RECEIPT.receiptNo);
     });
-    const receiptData = {
-        ...SWAP_RECEIPT,
-        purchasedDuration: t('screen6.mock_purchased_duration')
-    };
-    const activeBillingOptionId = localStorage.getItem('activeBillingOptionId') || 'swap_5_30d';
-    const activeBilling = getBillingOption(activeBillingOptionId);
-    const activeBillingLabel = t(activeBilling.titleKey);
-    const activeBillingQuota = t(activeBilling.quotaLabelKey);
+    const receiptData = SWAP_RECEIPT;
 
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
@@ -158,17 +151,6 @@ const Screen9 = () => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                                 <Text type="secondary" style={{ fontSize: '12px' }}>{t('screen6.duration')}</Text>
                                 <Text strong style={{ fontSize: '13px' }}>{receiptData.serviceTime}</Text>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                                <Text type="secondary" style={{ fontSize: '12px' }}>{t('history.purchased_duration')}</Text>
-                                <Text strong style={{ fontSize: '13px' }}>{receiptData.purchasedDuration}</Text>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '12px' }}>
-                                <Text type="secondary" style={{ fontSize: '12px' }}>{t('billing.your_plan')}</Text>
-                                <div style={{ textAlign: 'right' }}>
-                                    <Text strong style={{ display: 'block', fontSize: '13px' }}>{activeBillingLabel}</Text>
-                                    <Text type="secondary" style={{ fontSize: '11px' }}>{activeBillingQuota}</Text>
-                                </div>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                                 <Text type="secondary" style={{ fontSize: '12px' }}>{t('history.price_per_hour')}</Text>

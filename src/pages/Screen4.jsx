@@ -1,8 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Button, Card, Divider, Modal, Result, Spin, Tag, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Button, Card, Divider, Result, Spin, Tag, Typography } from 'antd';
 import {
     EnvironmentOutlined,
-    ShoppingCartOutlined,
     ThunderboltFilled,
     ThunderboltOutlined
 } from '@ant-design/icons';
@@ -10,8 +9,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MobileLayout from '../components/MobileLayout';
 import Header from '../components/Header';
-import { SWAP_CABINETS, getMockUserEntitlement } from '../data/mockSwapData';
-import { activateSwapFromEntitlement, hasActiveSwapSession } from '../utils/swapAccess';
+import { SWAP_CABINETS } from '../data/mockSwapData';
+import { hasActiveSwapSession } from '../utils/swapAccess';
 
 const { Title, Text } = Typography;
 
@@ -23,22 +22,17 @@ const SlotStat = ({ label, value, color }) => (
 );
 
 const Screen4 = () => {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [isLoading, setIsLoading] = useState(true);
-    const [entitlement] = useState(() => getMockUserEntitlement());
 
     const cabinetId = searchParams.get('cabinetId')
         || localStorage.getItem('currentCabinetId')
         || localStorage.getItem('currentChargerId')
         || 'AMR001';
     const cabinet = SWAP_CABINETS[cabinetId] || SWAP_CABINETS.AMR001;
-    const canStartSwap = cabinet.status === 'READY' && entitlement.hasActivePlan;
-
-    const goToPackages = useCallback(() => {
-        navigate(`/screen11?cabinetId=${cabinetId}`);
-    }, [cabinetId, navigate]);
+    const canStartSwap = cabinet.status === 'READY';
 
     useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 500);
@@ -48,20 +42,12 @@ const Screen4 = () => {
         return () => clearTimeout(timer);
     }, [cabinet.name, cabinetId, navigate]);
 
-    useEffect(() => {
-        if (isLoading || entitlement.hasActivePlan || hasActiveSwapSession()) return;
-
-        Modal.info({
-            title: t('billing.no_package_modal_title'),
-            content: t('billing.no_package_modal_desc'),
-            okText: t('billing.choose_plan'),
-            centered: true,
-            onOk: goToPackages
-        });
-    }, [entitlement.hasActivePlan, goToPackages, isLoading, t]);
-
     const startSwap = () => {
-        if (!activateSwapFromEntitlement(entitlement)) return;
+        if (!canStartSwap) return;
+        localStorage.setItem('activeSwapSession', 'true');
+        localStorage.setItem('swapFlowStage', 'return');
+        localStorage.removeItem('oldBatteryReturned');
+        localStorage.removeItem('swapPaymentConfirmed');
         navigate('/screen6');
     };
 
@@ -94,99 +80,55 @@ const Screen4 = () => {
     return (
         <MobileLayout>
             <Header title={t('screen1.station_info')} showBack={false} />
-            <div style={{ minHeight: '100%', padding: '18px 20px 24px', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%)' }}>
-                <Card style={{ borderRadius: '22px', border: entitlement.hasActivePlan ? '1px solid #BBF7D0' : '1px solid #E2E8F0', marginBottom: '16px', background: entitlement.hasActivePlan ? '#F0FDF4' : '#FFFFFF' }} styles={{ body: { padding: '18px' } }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start', marginBottom: '14px' }}>
-                        <div>
-                            <Text type="secondary" style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '0.8px', textTransform: 'uppercase' }}>
-                                {t('billing.your_plan')}
-                            </Text>
-                            <Title level={5} style={{ margin: '6px 0 4px 0' }}>{t(entitlement.planNameKey)}</Title>
-                            {entitlement.hasActivePlan ? (
-                                <>
-                                    <Text type="secondary" style={{ display: 'block', fontSize: '12px' }}>
-                                        {t('billing.remaining_quota', { count: entitlement.remainingQuota })}
-                                    </Text>
-                                    <Text type="secondary" style={{ display: 'block', fontSize: '12px' }}>
-                                        {t('billing.active_until', { date: new Date(entitlement.expiresAt).toLocaleDateString(i18n.language === 'th' ? 'th-TH' : 'en-GB') })}
-                                    </Text>
-                                </>
-                            ) : (
-                                <Text type="secondary" style={{ fontSize: '12px' }}>{t('billing.payment_required')}</Text>
-                            )}
+            <div style={{ height: 'calc(100dvh - 64px)', minHeight: 'calc(100vh - 64px)', boxSizing: 'border-box', padding: '18px 20px 24px', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%)', overflowY: 'auto' }}>
+                <div style={{ flex: 1, minHeight: 0 }}>
+                    <Card style={{ borderRadius: '24px', border: '1px solid #D1FAE5', boxShadow: '0 12px 30px rgba(16,185,129,0.10)' }} styles={{ body: { padding: '22px' } }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start' }}>
+                            <div>
+                                <Text type="secondary" style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '1px', textTransform: 'uppercase' }}>
+                                    {t('screen1.station_label')}
+                                </Text>
+                                <Title level={3} style={{ margin: '8px 0 10px 0', color: '#0f172a' }}>{cabinet.name}</Title>
+                            </div>
+                            <Tag color={cabinet.status === 'READY' ? 'success' : 'warning'} style={{ margin: 0, borderRadius: '999px', fontWeight: 800 }}>
+                                {cabinet.status === 'READY' ? t('screen1.status_available') : t('screen1.status_unavailable')}
+                            </Tag>
                         </div>
-                    </div>
-                </Card>
 
-                <Card style={{ borderRadius: '24px', border: '1px solid #D1FAE5', boxShadow: '0 12px 30px rgba(16,185,129,0.10)' }} styles={{ body: { padding: '22px' } }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start' }}>
-                        <div>
-                            <Text type="secondary" style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '1px', textTransform: 'uppercase' }}>
-                                {t('screen1.station_label')}
-                            </Text>
-                            <Title level={3} style={{ margin: '8px 0 10px 0', color: '#0f172a' }}>{cabinet.name}</Title>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '18px' }}>
+                            <EnvironmentOutlined style={{ color: '#10b981', marginTop: '3px' }} />
+                            <Text type="secondary" style={{ fontSize: '13px', lineHeight: 1.5 }}>{cabinet.address}</Text>
                         </div>
-                        <Tag color={cabinet.status === 'READY' ? 'success' : 'warning'} style={{ margin: 0, borderRadius: '999px', fontWeight: 800 }}>
-                            {cabinet.status === 'READY' ? t('screen1.status_available') : t('screen1.status_unavailable')}
-                        </Tag>
-                    </div>
 
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '18px' }}>
-                        <EnvironmentOutlined style={{ color: '#10b981', marginTop: '3px' }} />
-                        <Text type="secondary" style={{ fontSize: '13px', lineHeight: 1.5 }}>{cabinet.address}</Text>
-                    </div>
+                        <Divider style={{ margin: '14px 0' }} />
 
-                    <Divider style={{ margin: '14px 0' }} />
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'center', background: '#F8FAFC', padding: '14px', borderRadius: '16px', marginBottom: '12px' }}>
-                        <div>
-                            <Text type="secondary" style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>{t('screen1.charger_type_label')}</Text>
-                            <Text strong>{cabinet.batteryModel}</Text>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'center', background: '#F8FAFC', padding: '14px', borderRadius: '16px', marginBottom: '12px' }}>
+                            <div>
+                                <Text type="secondary" style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>{t('screen1.charger_type_label')}</Text>
+                                <Text strong>{cabinet.batteryModel}</Text>
+                            </div>
+                            <ThunderboltOutlined style={{ color: '#10b981', fontSize: '22px' }} />
                         </div>
-                        <ThunderboltOutlined style={{ color: '#10b981', fontSize: '22px' }} />
-                    </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-                        <SlotStat label={t('screen1.slot_full')} value={cabinet.fullBatteries} color="#10b981" />
-                        <SlotStat label={t('screen1.slot_empty')} value={cabinet.emptySlots} color="#64748b" />
-                        <SlotStat label={t('screen1.slot_fault')} value={cabinet.faultSlots} color="#f59e0b" />
-                    </div>
-                </Card>
-
-                <div style={{ marginTop: 'auto', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {entitlement.hasActivePlan && (
-                        <Button
-                            type="primary"
-                            size="large"
-                            block
-                            disabled={!canStartSwap}
-                            icon={<ThunderboltFilled />}
-                            onClick={startSwap}
-                            style={{ height: '60px', borderRadius: '20px', background: '#10b981', border: 'none', fontSize: '18px', fontWeight: 800 }}
-                        >
-                            {t('billing.start_swap')}
-                        </Button>
-                    )}
-                    {!entitlement.hasActivePlan && (
-                        <Button
-                            size="large"
-                            block
-                            icon={<ShoppingCartOutlined />}
-                            onClick={goToPackages}
-                            style={{
-                                height: '58px',
-                                borderRadius: '20px',
-                                borderColor: '#10b981',
-                                color: '#ffffff',
-                                background: '#10b981',
-                                fontSize: '17px',
-                                fontWeight: 800
-                            }}
-                        >
-                            {t('billing.choose_plan')}
-                        </Button>
-                    )}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                            <SlotStat label={t('screen1.slot_full')} value={cabinet.fullBatteries} color="#10b981" />
+                            <SlotStat label={t('screen1.slot_empty')} value={cabinet.emptySlots} color="#64748b" />
+                            <SlotStat label={t('screen1.slot_fault')} value={cabinet.faultSlots} color="#f59e0b" />
+                        </div>
+                    </Card>
                 </div>
+
+                <Button
+                    type="primary"
+                    size="large"
+                    block
+                    disabled={!canStartSwap}
+                    icon={<ThunderboltFilled />}
+                    onClick={startSwap}
+                    style={{ height: '60px', flexShrink: 0, marginTop: '24px', borderRadius: '20px', background: '#10b981', border: 'none', fontSize: '18px', fontWeight: 800 }}
+                >
+                    {t('billing.start_swap')}
+                </Button>
             </div>
         </MobileLayout>
     );

@@ -21,8 +21,6 @@ import en_locale from 'antd/es/date-picker/locale/en_US';
 import {
     SWAP_HISTORY_PREVIOUS,
     SWAP_HISTORY_TODAY,
-    getBillingOption,
-    getMockUserEntitlement,
     getMoreSwapHistory
 } from '../data/mockSwapData';
 
@@ -36,7 +34,6 @@ const HistoryItem = ({
     endTime,
     energy,
     duration,
-    purchasedDuration,
     isFeedbackDone,
     onGiveFeedback,
 }) => {
@@ -97,10 +94,6 @@ const HistoryItem = ({
 
                 <Col span={24}>
                     <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                            <Text type="secondary" style={{ fontSize: '11px' }}>{t('history.purchased_duration')}</Text>
-                            <Text strong style={{ fontSize: '12px', color: '#EF4444' }}>{purchasedDuration}</Text>
-                        </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                             <Text type="secondary" style={{ fontSize: '11px' }}>{t('history.start_time')}</Text>
                             <Text strong style={{ fontSize: '12px', color: '#475569' }}>{startTime}</Text>
@@ -181,19 +174,6 @@ const Screen8 = () => {
         dayjs().subtract(7, 'day'),
         dayjs().subtract(1, 'day')
     ]);
-
-    const getSelectedSwapPackageLabel = () => {
-        const activeBillingOptionId = localStorage.getItem('activeBillingOptionId');
-        const entitlement = getMockUserEntitlement();
-        const billingOptionId = activeBillingOptionId || entitlement.billingOptionId;
-
-        if (!billingOptionId) return t('billing.no_active_plan');
-
-        const billingOption = getBillingOption(billingOptionId);
-        return t(billingOption.titleKey);
-    };
-
-    const selectedSwapPackageLabel = getSelectedSwapPackageLabel();
 
     const [history, setHistory] = useState(() => SWAP_HISTORY_PREVIOUS);
 
@@ -299,7 +279,6 @@ const Screen8 = () => {
                                 <HistoryItem
                                     key={item.id}
                                     {...item}
-                                    purchasedDuration={selectedSwapPackageLabel}
                                     onGiveFeedback={() => handleGiveFeedback(item)}
                                 />
                             ))}
@@ -331,7 +310,6 @@ const Screen8 = () => {
                                 <HistoryItem
                                     key={item.id}
                                     {...item}
-                                    purchasedDuration={selectedSwapPackageLabel}
                                     onGiveFeedback={() => handleGiveFeedback(item)}
                                 />
                             ))}

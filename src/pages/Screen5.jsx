@@ -13,7 +13,6 @@ import MobileLayout from '../components/MobileLayout';
 import Header from '../components/Header';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getBillingOption, setMockUserEntitlement } from '../data/mockSwapData';
 
 import qrImage from '../assets/thai_promptpay_qr_mockup.png';
 
@@ -32,13 +31,11 @@ const Screen4 = () => {
     const [trueMoneyOtp, setTrueMoneyOtp] = useState('');
     const [trueMoneyError, setTrueMoneyError] = useState('');
 
-    const billingOptionId = location.state?.billingOptionId || 'swap_5_30d';
-    const selectedBilling = getBillingOption(billingOptionId);
-    const amountToPay = location.state?.price ?? selectedBilling.price;
-    const packageLabel = location.state?.packageLabel || t(selectedBilling.titleKey);
-    const quotaLabel = location.state?.quotaLabel || t(selectedBilling.quotaLabelKey);
-    const returnPath = location.state?.returnPath || '/screen4';
-    const isPackagePurchase = location.state?.paymentPurpose === 'package_purchase';
+    const amountToPay = location.state?.price ?? 20;
+    const packageLabel = location.state?.serviceLabel || t('payment.swap_service_label');
+    const quotaLabel = t('payment.swap_service_desc');
+    const returnPath = location.state?.returnPath || '/screen6';
+    const nextSwapStage = location.state?.nextSwapStage || 'pickup';
 
     const handleDownloadQR = () => {
         const link = document.createElement('a');
@@ -53,35 +50,21 @@ const Screen4 = () => {
     React.useEffect(() => {
         const hasActiveSwap = localStorage.getItem('activeSwapSession') === 'true'
             || localStorage.getItem('isCharging') === 'true';
-        if (hasActiveSwap) {
+        const swapFlowStage = localStorage.getItem('swapFlowStage');
+        if (hasActiveSwap && swapFlowStage !== 'payment') {
             navigate('/screen6');
         }
     }, [navigate]);
 
     const completePayment = () => {
         setPaymentStatus('confirmed');
-        message.success(isPackagePurchase ? t('payment.package_success') : t('payment.payment_success'));
+        message.success(t('payment.payment_success'));
 
-        if (selectedBilling.group === 'per_swap') {
-            setMockUserEntitlement('quota');
-        } else if (selectedBilling.id === 'pass_1d') {
-            setMockUserEntitlement('daily');
-        } else if (selectedBilling.group === 'pass') {
-            setMockUserEntitlement('monthly');
-        }
-
-        localStorage.setItem('activeBillingOptionId', billingOptionId);
-        localStorage.setItem('activeBillingMode', selectedBilling.type);
         localStorage.setItem('activePaymentMethod', selectedPaymentMethod);
-
-        if (isPackagePurchase) {
-            localStorage.removeItem('activeSwapSession');
-            localStorage.removeItem('isCharging');
-            navigate(returnPath, { replace: true });
-        } else {
-            localStorage.setItem('activeSwapSession', 'true');
-            navigate('/screen6');
-        }
+        localStorage.setItem('activeSwapSession', 'true');
+        localStorage.setItem('swapPaymentConfirmed', 'true');
+        localStorage.setItem('swapFlowStage', nextSwapStage);
+        navigate(returnPath, { replace: true });
     };
 
     const startBackendCallbackWait = () => {
@@ -595,7 +578,7 @@ const Screen4 = () => {
                                 okText: t('common.ok'),
                                 cancelText: t('common.cancel'),
                                 centered: true,
-                                onOk: () => navigate(returnPath.includes('screen4') ? returnPath.replace('/screen4', '/screen11') : '/screen11'),
+                                onOk: () => navigate(returnPath),
                                 okButtonProps: {
                                     danger: true,
                                     style: { borderRadius: '8px' }
